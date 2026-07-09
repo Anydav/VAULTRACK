@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import { loginUser, signupUser } from "../services/auth.service.js";
+import { validatePassword } from "../utils/passwordValidator.js";
+import { validateEmail } from "../utils/emailValidator.js";
+import { supabase } from "../config/supabase.js";
 
 export async function signupController(req: Request, res: Response) {
   try {
@@ -11,6 +14,22 @@ export async function signupController(req: Request, res: Response) {
         message: "Full name, email, and password are required",
       });
     }
+    const emailValidation = validateEmail(email);
+
+    if (!emailValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: emailValidation.message,
+      });
+    }
+    const passwordValidation = validatePassword(password);
+
+    if (!passwordValidation.isValid) {
+     return res.status(400).json({
+        success: false,
+        message: passwordValidation.message,
+      });
+    }
 
     const result = await signupUser({
       fullName,
@@ -19,17 +38,17 @@ export async function signupController(req: Request, res: Response) {
     });
 
     res.cookie("vaulttrack_token", result.token, {
-  httpOnly: true,
-  secure: false,
-  sameSite: "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
-return res.status(201).json({
-  success: true,
-  message: "Account created successfully",
-  user: result.user,
-});
+    return res.status(201).json({
+      success: true,
+      message: "Account created successfully",
+      user: result.user,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Something went wrong";
@@ -90,10 +109,23 @@ export async function meController(req: Request, res: Response) {
       });
     }
 
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("id, email, full_name, preferred_currency, created_at")
+      .eq("id", req.user.userId)
+      .single();
+
+    if (error || !profile) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: "User fetched successfully",
-      user: req.user,
+      user: profile,
     });
   } catch {
     return res.status(500).json({

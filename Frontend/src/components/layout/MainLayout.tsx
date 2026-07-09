@@ -1,25 +1,22 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet } from "react-router-dom";
+import { Sidebar } from "./Sidebar";
+import { Topbar } from "./Topbar";
 
-const SidebarPlaceholder = () => (
-  <aside className="w-64 bg-white border-r p-4">Sidebar</aside>
-)
-
-const TopNavPlaceholder = () => (
-  <header className="h-16 bg-white border-b flex items-center px-4">TopNav</header>
-)
-
-export default function MainLayout() {
+export function MainLayout() {
   return (
-    <div className="min-h-screen flex bg-gray-50">
-      <SidebarPlaceholder />
-      <div className="flex-1 flex flex-col">
-        <TopNavPlaceholder />
-        <main className="p-4 flex-1">
+    <div className="flex min-h-screen gap-4 bg-[#F8FAFC] p-4">
+      <div className="sticky top-4 self-start">
+        <Sidebar />
+      </div>
+      
+      <div className="flex flex-1 flex-col gap-4">
+        
+        <Topbar />
+
+        <main className="flex-1 rounded-2xl  p-6">
           <Outlet />
         </main>
       </div>
-    </div>
-  )
+     </div>
+  );
 }
-
