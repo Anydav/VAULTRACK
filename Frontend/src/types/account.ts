@@ -5,3 +5,8 @@ export interface Account {
   currency: string | null;
   created_at?: string;
 }
+export interface CreateAccountInput {
+  name: string;
+  accountType: string;
+  currency?: string;
+}

@@ -1,6 +1,7 @@
 import { supabase } from "../config/supabase.js";
 import { CreateAssetInput, SearchAssetInput } from "../types/asset.types.js";
 import { searchCryptoAssetsFromCoinGecko } from "./coinGecko.service.js";
+import { syncCryptoPricesIfStale } from "./price.service.js";
 
 export async function createAsset(input: CreateAssetInput) {
   const { symbol, name, assetType, market, currency } = input;
@@ -33,9 +34,11 @@ export async function searchAssets(input: SearchAssetInput) {
   const normalizedMarket = market.toUpperCase().trim();
   const normalizedQuery = query.trim();
 
-  const { data:localAssets, error:localError } = await supabase
+  const { data: localAssets, error: localError } = await supabase
     .from("assets")
-    .select("id, symbol, name, asset_type, market, currency, external_id")
+    .select(
+      "id, symbol, name, asset_type, market, currency, external_id, asset_prices ( price, currency, price_time )"
+    )
     .eq("market", normalizedMarket)
     .or(`symbol.ilike.%${normalizedQuery}%,name.ilike.%${normalizedQuery}%`)
     .limit(10);
@@ -44,7 +47,7 @@ export async function searchAssets(input: SearchAssetInput) {
     throw new Error(localError.message);
   }
   if (localAssets && localAssets.length > 0) {
-  return localAssets;
+    return localAssets;
   }
   if (normalizedMarket !== "CRYPTO") {
     return [];
@@ -56,24 +59,44 @@ export async function searchAssets(input: SearchAssetInput) {
   }
 
   const assetsToInsert = data.map((asset) => ({
-  symbol: asset.symbol,
-  name: asset.name,
-  asset_type: asset.assetType,
-  market: asset.market,
-  currency: asset.currency,
-  external_id: asset.externalId,
+    symbol: asset.symbol,
+    name: asset.name,
+    asset_type: asset.assetType,
+    market: asset.market,
+    currency: asset.currency,
+    external_id: asset.externalId,
   }));
 
   const { data: savedAssets, error: insertError } = await supabase
-  .from("assets")
-  .upsert(assetsToInsert, {
-    onConflict: "symbol,market",
-  })
-  .select("id, symbol, name, asset_type, market, currency, external_id");
+    .from("assets")
+    .upsert(assetsToInsert, {
+      onConflict: "symbol,market",
+    })
+    .select(
+      "id, symbol, name, asset_type, market, currency, external_id, asset_prices ( price, currency, price_time )"
+    );
 
   if (insertError) {
-  throw new Error(insertError.message);
+    throw new Error(insertError.message);
   }
-  
-  return savedAssets;
+
+  // Newly discovered assets have no price yet — sync immediately so
+  // this search response (and any immediate re-fetch) has real prices.
+  await syncCryptoPricesIfStale(0);
+
+  const { data: pricedAssets, error: pricedError } = await supabase
+    .from("assets")
+    .select(
+      "id, symbol, name, asset_type, market, currency, external_id, asset_prices ( price, currency, price_time )"
+    )
+    .in(
+      "id",
+      savedAssets.map((asset) => asset.id)
+    );
+
+  if (pricedError) {
+    throw new Error(pricedError.message);
+  }
+
+  return pricedAssets;
 }

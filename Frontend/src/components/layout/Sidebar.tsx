@@ -1,9 +1,10 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { ChevronDown } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronDown, LogOut } from "lucide-react";
 import { getAccounts } from "../../services/account.service";
 import { getUserAssets } from "../../services/userAssets.service";
+import { logout } from "../../services/auth.service";
 
 import Logo from "../../assets/Vector.png";
 import DashboardIcon from "../../assets/Category.png";
@@ -24,6 +25,8 @@ const bottomNavItems = [
 ];
 
 export function Sidebar() {
+   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isAccountsOpen, setIsAccountsOpen] = useState(false);
 
   const { data: accounts = [], isLoading: accountsLoading } = useQuery({
@@ -38,8 +41,14 @@ export function Sidebar() {
   });
 
   const topAssets = [...holdings]
-    .sort((a, b) => b.valuation.currentValue - a.valuation.currentValue)
+    .sort((a, b) => b.valuation.currentValueDisplay - a.valuation.currentValueDisplay)
     .slice(0, 5);
+
+  async function handleLogout() {
+    await logout();
+    queryClient.clear();
+    navigate("/auth");
+  }
   return (
     <aside className=" hidden h-[calc(100vh-2rem)] w-64 shrink-0 rounded-2xl bg-[#17352F] text-white md:flex md:flex-col">
       {/* Logo */}
@@ -188,8 +197,18 @@ export function Sidebar() {
     </NavLink>
   </li>
 ))}
+          <li>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Logout</span>
+            </button>
+          </li>
         </ul>
       </nav>
     </aside>
-  );
+    );
 }

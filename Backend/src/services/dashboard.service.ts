@@ -27,9 +27,9 @@ const exchangeRate = await getExchangeRate(baseCurrency, displayCurrency);
 
   const summary = holdings.reduce(
     (totals: any, holding: any) => {
-      const currentValue = holding.valuation?.currentValue || 0;
-      const totalCost = holding.valuation?.totalCost || 0;
-      const profitLoss = holding.valuation?.profitLoss || 0;
+      const currentValue = holding.valuation?.currentValueBase || 0;
+      const totalCost = holding.valuation?.totalCostBase || 0;
+      const profitLoss = holding.valuation?.profitLossBase || 0;
 
       totals.totalPortfolioValue += currentValue;
       totals.totalCost += totalCost;

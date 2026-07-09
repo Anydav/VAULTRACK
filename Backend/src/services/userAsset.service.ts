@@ -1,5 +1,6 @@
 import { supabase } from "../config/supabase.js";
 import { CreateUserAssetInput } from "../types/userAsset.types.js";
+import { getExchangeRate, convertCurrency } from "./currency.service.js";
 
 export async function createUserAsset(input: CreateUserAssetInput) {
   const {
@@ -65,6 +66,20 @@ export async function createUserAsset(input: CreateUserAssetInput) {
 }
 
 export async function getUserAssets(userId: string) {
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("preferred_currency")
+    .eq("id", userId)
+    .single();
+
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
+
+  const baseCurrency = "USD";
+  const displayCurrency = profile?.preferred_currency || "USD";
+  const exchangeRate = await getExchangeRate(baseCurrency, displayCurrency);
+
   const { data, error } = await supabase
     .from("user_assets")
     .select(
@@ -106,43 +121,44 @@ export async function getUserAssets(userId: string) {
     throw new Error(error.message);
   }
 
- const enrichedUserAssets = data.map((holding: any) => {
-  const quantity = Number(holding.quantity);
-  const costPrice = Number(holding.cost_price || 0);
+  const enrichedUserAssets = data.map((holding: any) => {
+    const quantity = Number(holding.quantity);
+    const costPrice = Number(holding.cost_price || 0);
 
-  const latestPrice = Number(
-    holding.assets?.asset_prices?.price || 0
-  );
+    const latestPrice = Number(holding.assets?.asset_prices?.price || 0);
 
-  const currentValue = quantity * latestPrice;
+    const currentValueBase = quantity * latestPrice;
+    const totalCostBase = quantity * costPrice;
+    const profitLossBase = currentValueBase - totalCostBase;
 
-  const totalCost = quantity * costPrice;
+    const profitLossPercentage =
+      totalCostBase > 0 ? (profitLossBase / totalCostBase) * 100 : 0;
 
-  const profitLoss = currentValue - totalCost;
+    return {
+      ...holding,
+      valuation: {
+        baseCurrency,
+        displayCurrency,
+        exchangeRate,
 
-  const profitLossPercentage =
-    totalCost > 0
-      ? (profitLoss / totalCost) * 100
-      : 0;
+        latestPrice,
 
-  return {
-    ...holding,
-    valuation: {
-      latestPrice,
-      currentValue,
-      totalCost,
-      profitLoss,
-      profitLossPercentage,
-      priceCurrency:
-        holding.assets?.asset_prices?.currency ||
-        holding.assets?.currency,
+        currentValueBase,
+        totalCostBase,
+        profitLossBase,
 
-      priceLastUpdated:
-        holding.assets?.asset_prices?.price_time || null,
-    },
-  };
-});
+        currentValueDisplay: convertCurrency(currentValueBase, exchangeRate),
+        totalCostDisplay: convertCurrency(totalCostBase, exchangeRate),
+        profitLossDisplay: convertCurrency(profitLossBase, exchangeRate),
 
-return enrichedUserAssets;
+        profitLossPercentage,
 
+        priceCurrency:
+          holding.assets?.asset_prices?.currency || holding.assets?.currency,
+        priceLastUpdated: holding.assets?.asset_prices?.price_time || null,
+      },
+    };
+  });
+
+  return enrichedUserAssets;
 }

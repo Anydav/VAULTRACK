@@ -22,11 +22,20 @@ export interface Holding {
   } | null;
   valuation: {
     latestPrice: number;
-    currentValue: number;
-    totalCost: number;
-    profitLoss: number;
+    currentValueDisplay: number;
+    totalCostDisplay: number;
+    profitLossDisplay: number;
     profitLossPercentage: number;
     priceCurrency: string;
     priceLastUpdated: string | null;
   };
+}
+
+export interface CreateHoldingInput {
+  accountId: string;
+  assetId: string;
+  quantity: number;
+  costPrice?: number;
+  costCurrency?: string;
+  acquiredAt?: string;
 }

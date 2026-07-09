@@ -59,18 +59,18 @@ export default function HoldingTable() {
       key: "value",
       header: "Value",
       align: "right",
-      render: (holding) => holding.valuation.currentValue.toLocaleString(),
+      render: (holding) => holding.valuation.currentValueDisplay.toLocaleString(),
     },
     {
       key: "pnl",
       header: "P/L",
       align: "right",
       render: (holding) => {
-        const isProfit = holding.valuation.profitLoss >= 0;
+        const isProfit = holding.valuation.profitLossDisplay >= 0;
         return (
           <span className={isProfit ? "text-green-600" : "text-red-500"}>
             {isProfit ? "+" : ""}
-            {holding.valuation.profitLoss.toLocaleString()}
+            {holding.valuation.profitLossDisplay.toLocaleString()}
           </span>
         );
       },

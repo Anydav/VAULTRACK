@@ -35,7 +35,7 @@ export default function AllocationChart() {
         key = holding.accounts?.name ?? "Unknown";
       }
 
-      const currentValue = holding.valuation.currentValue;
+      const currentValue = holding.valuation.currentValueDisplay;
       groups.set(key, (groups.get(key) ?? 0) + currentValue);
     }
 
@@ -119,7 +119,7 @@ export default function AllocationChart() {
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
                 <p className="text-xs text-gray-400">Total</p>
                 <p className="text-sm font-bold text-[#17352F]">
-                  {currency} {total.toLocaleString()}
+                   {total.toLocaleString()}
                 </p>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function AllocationChart() {
                     {item.name}
                   </span>
                   <span className="font-medium text-[#17352F]">
-                    {currency} {item.value.toLocaleString()}
+                     {item.value.toLocaleString()}
                   </span>
                 </div>
               ))}

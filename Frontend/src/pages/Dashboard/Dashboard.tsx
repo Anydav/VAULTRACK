@@ -1,8 +1,11 @@
 import SummaryCard from "./sumaryCard";
 import AssetHoldingCard from "./AssetHoldingCard";
 import AnalyisChart from "./AnalysisChart";
+import { useAddAssetModal } from "../../context/addAssetModelcontext";
 
 export default function Dashboard() {
+  const { openAddAssetModal } = useAddAssetModal();
+
   return  (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -10,6 +13,7 @@ export default function Dashboard() {
         <button
           type="button"
           className="rounded-xl bg-[#17352F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f241f]"
+          onClick={() => openAddAssetModal()}
         >
           + Add Asset
         </button>

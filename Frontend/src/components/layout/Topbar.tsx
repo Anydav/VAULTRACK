@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, ChevronDown } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { getMe } from "../../services/profile.service";
 import { getUserAssets } from "../../services/userAssets.service";
 import { searchAssets } from "../../services/asset.service";
+import { useAddAssetModal } from "../../context/addAssetModelcontext";
 
 export function Topbar() {
   const [query, setQuery] = useState("");
@@ -49,6 +50,7 @@ export function Topbar() {
     month: "long",
     day: "numeric",
   });
+  const { openAddAssetModal } = useAddAssetModal();
 
   return (
     <header className="flex h-20 items-center justify-between gap-4 rounded-2xl bg-white px-4 shadow-sm sm:px-6">
@@ -114,15 +116,27 @@ export function Topbar() {
                   </p>
                 ) : (
                   marketResults.map((asset) => (
-                    <div
+                    <button
                       key={asset.id}
-                      className="flex items-center justify-between rounded-lg px-2 py-2 text-sm text-gray-700"
+                      type="button"
+                      onClick={() => {
+                        openAddAssetModal({ asset });
+                        setQuery("");
+                      }}
+                      className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      <span>{asset.symbol}</span>
-                      <span className="text-xs text-gray-400">
-                        {asset.name}
+                      <span className="flex flex-col items-start">
+                        <span>{asset.symbol}</span>
+                        <span className="text-xs text-gray-400">
+                          {asset.name}
+                        </span>
                       </span>
-                    </div>
+                      <span className="text-xs font-medium text-[#17352F]">
+                        {asset.asset_prices?.price != null
+                          ? `${asset.asset_prices.currency} ${asset.asset_prices.price.toLocaleString()}`
+                          : "—"}
+                      </span>
+                    </button>
                   ))
                 )}
               </div>
@@ -133,6 +147,19 @@ export function Topbar() {
 
       {/* Notification + profile */}
       <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+        <button
+          type="button"
+          className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          <img
+            src="https://flagcdn.com/w40/ng.png"
+            alt="Nigeria flag"
+            className="h-4 w-5 rounded-sm object-cover"
+          />
+          <span>NGN</span>
+          <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+        </button>
+
         <button
           type="button"
           className="rounded-full p-2 text-gray-500 hover:bg-gray-100"

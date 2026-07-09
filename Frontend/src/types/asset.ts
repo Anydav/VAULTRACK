@@ -6,4 +6,9 @@ export interface Asset {
   market: string;
   currency: string;
   external_id: string | null;
+  asset_prices: {
+    price: number;
+    currency: string;
+    price_time: string;
+  } | null;
 }

@@ -4,6 +4,10 @@ import {MainLayout} from './components/layout/MainLayout'
 import Auth from './pages/Auth/Auth'
 import Dashboard from './pages/Dashboard/Dashboard'
 import Portfolio from './pages/Portfolio/portfolio'
+import AccountDetail from './pages/Accounts/accountDetail'
+import History from './pages/History/history'
+import { AddAssetModalProvider } from "./context/addAssetModelcontext";
+import AddAssetModal from "./components/addAsset/addAssetModel";
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-8">{title} - Placeholder</div>
@@ -11,19 +15,22 @@ const Placeholder = ({ title }: { title: string }) => (
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/auth" replace />} />
-      <Route path="/auth" element={<Auth />} />
-      
+    <AddAssetModalProvider>
+      <Routes>
+        <Route path="/" element={<Navigate to="/auth" replace />} />
+        <Route path="/auth" element={<Auth />} />
 
-      <Route  element={<MainLayout />}> 
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="portfolio" element={<Portfolio />} />
-        <Route path="accounts" element={<Placeholder title="Accounts" />} />
-        <Route path="assets" element={<Placeholder title="Assets" />} />
-        <Route path="history" element={<Placeholder title="History" />} />
-        <Route path="settings" element={<Placeholder title="Settings" />} />
-      </Route>
-    </Routes>
+        <Route element={<MainLayout />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="portfolio" element={<Portfolio />} />
+          <Route path="accounts/:accountId" element={<AccountDetail />} />
+          <Route path="assets" element={<Placeholder title="Assets" />} />
+          <Route path="history" element={<History />} />
+          <Route path="settings" element={<Placeholder title="Settings" />} />
+        </Route>
+      </Routes>
+
+      <AddAssetModal />
+    </AddAssetModalProvider>
   )
 }

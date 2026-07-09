@@ -46,11 +46,11 @@ export default function PortfolioSummary() {
   const stats = [
     {
       label: "Total Value",
-      value: `${summary.displayCurrency} ${summary.totalPortfolioValueDisplay.toLocaleString()}`,
+      value: ` ${summary.totalPortfolioValueDisplay.toLocaleString()}`,
     },
     {
       label: "Total Cost",
-      value: `${summary.displayCurrency} ${summary.totalCostDisplay.toLocaleString()}`,
+      value: ` ${summary.totalCostDisplay.toLocaleString()}`,
     },
     {
       label: "Accounts",
@@ -58,7 +58,7 @@ export default function PortfolioSummary() {
     },
     {
       label: "Total Profit",
-      value: `${isProfit ? "+" : ""}${summary.displayCurrency} ${summary.totalProfitLossDisplay.toLocaleString()}`,
+      value: `${isProfit ? "+" : ""} ${summary.totalProfitLossDisplay.toLocaleString()}`,
       highlight: isProfit,
     },
   ];

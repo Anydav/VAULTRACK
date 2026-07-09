@@ -29,7 +29,7 @@ export default function AssetHoldingCard() {
           </thead>
           <tbody>
             {holdings.map((holding) => {
-              const isProfit = holding.valuation.profitLoss >= 0;
+              const isProfit = holding.valuation.profitLossDisplay >= 0;
 
               return (
                 <tr key={holding.id} className="border-t border-gray-50">
@@ -38,7 +38,7 @@ export default function AssetHoldingCard() {
                   </td>
                   <td className="py-2 text-gray-600">{holding.quantity}</td>
                   <td className="py-2 text-gray-600">
-                    {holding.valuation.currentValue.toLocaleString()}
+                    {holding.valuation.currentValueDisplay.toLocaleString()}
                   </td>
                   <td
                     className={`py-2 font-medium ${
