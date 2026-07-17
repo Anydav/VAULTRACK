@@ -11,7 +11,7 @@ const GROUP_OPTIONS: { label: string; value: GroupBy }[] = [
   { label: "Account", value: "account" },
 ];
 
-const COLORS = ["#17352F", "#C8F169", "#F5B841", "#7C9EFF", "#E57373", "#8E8E8E"];
+const COLORS = [ "var(--color-primary)","var(--color-accent)", "#F5B841", "#7C9EFF", "#E57373", "#8E8E8E"];
 
 export default function AllocationChart() {
   const [groupBy, setGroupBy] = useState<GroupBy>("asset");
@@ -52,7 +52,7 @@ export default function AllocationChart() {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[#17352F]">
+        <h2 className="text-lg font-semibold text-primary">
           Allocation Analysis
         </h2>
 
@@ -64,7 +64,7 @@ export default function AllocationChart() {
               onClick={() => setGroupBy(option.value)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                 groupBy === option.value
-                  ? "bg-[#C8F169] text-[#17352F]"
+                  ? "bg-accent text-primary"
                   : "text-gray-400 hover:bg-gray-100"
               }`}
             >
@@ -77,7 +77,7 @@ export default function AllocationChart() {
       <div className="mt-4">
         {isLoading ? (
           <div className="flex min-h-[220px] flex-col items-center justify-center gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-[#17352F]" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-primary" />
             <p className="text-sm font-medium text-gray-400">
               Loading allocation...
             </p>
@@ -118,7 +118,7 @@ export default function AllocationChart() {
 
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
                 <p className="text-xs text-gray-400">Total</p>
-                <p className="text-sm font-bold text-[#17352F]">
+                <p className="text-sm font-bold text-primary">
                    {total.toLocaleString()}
                 </p>
               </div>
@@ -137,7 +137,7 @@ export default function AllocationChart() {
                     />
                     {item.name}
                   </span>
-                  <span className="font-medium text-[#17352F]">
+                  <span className="font-medium text-primary">
                      {item.value.toLocaleString()}
                   </span>
                 </div>

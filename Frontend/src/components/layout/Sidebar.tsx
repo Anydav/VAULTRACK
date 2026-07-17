@@ -50,7 +50,7 @@ export function Sidebar() {
     navigate("/auth");
   }
   return (
-    <aside className=" hidden h-[calc(100vh-2rem)] w-64 shrink-0 rounded-2xl bg-[#17352F] text-white md:flex md:flex-col">
+    <aside className=" hidden h-[calc(100vh-2rem)] w-64 shrink-0 rounded-2xl bg-primary text-white md:flex md:flex-col">
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-8">
         <img src={Logo} alt="VaultTrack Logo" className="h-8 w-8" />
@@ -67,7 +67,7 @@ export function Sidebar() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
                     isActive
-                      ? "bg-[#C8F169] text-[#17352F]"
+                      ? "bg-accent text-primary"
                       : "text-white hover:bg-white/10"
                   }`
                 }
@@ -113,7 +113,7 @@ export function Sidebar() {
                       className={({ isActive }) =>
                         `block rounded-lg px-3 py-2 text-sm transition ${
                           isActive
-                            ? "bg-[#C8F169] text-[#17352F]"
+                            ? "bg-accent text-primary"
                             : "text-white/80 hover:bg-white/10 hover:text-white"
                         }`
                       }
@@ -131,7 +131,7 @@ export function Sidebar() {
       to="/assets"
       className={({ isActive }) =>
         `flex flex-1 items-center gap-3 ${
-          isActive ? "text-[#C8F169]" : "text-white"
+          isActive ? "text-accent" : "text-white"
         }`
       }
     >
@@ -167,7 +167,7 @@ export function Sidebar() {
     className={({ isActive }) =>
       `block rounded-lg px-3 py-2 text-sm transition ${
         isActive
-          ? "bg-[#C8F169] text-[#17352F]"
+          ? "bg-accent text-primary"
           : "text-white/80 hover:bg-white/10 hover:text-white"
       }`
     }
@@ -187,7 +187,7 @@ export function Sidebar() {
       className={({ isActive }) =>
         `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
           isActive
-            ? "bg-[#C8F169] text-[#17352F]"
+            ? "bg-accent text-primary"
             : "text-white hover:bg-white/10"
         }`
       }

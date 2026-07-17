@@ -51,6 +51,15 @@ export function Topbar() {
     day: "numeric",
   });
   const { openAddAssetModal } = useAddAssetModal();
+  const [isBlueTheme, setIsBlueTheme] = useState(false);
+
+  function toggleTheme() {
+    setIsBlueTheme((prev) => {
+      const next = !prev;
+      document.body.classList.toggle("theme-blue", next);
+      return next;
+    });
+  }
 
   return (
     <header className="flex h-20 items-center justify-between gap-4 rounded-2xl bg-white px-4 shadow-sm sm:px-6">
@@ -58,7 +67,7 @@ export function Topbar() {
       <div className="min-w-0 shrink-0">
         <h1 className="truncate text-base font-semibold sm:text-lg">
           <span className="text-gray-800">Hello, </span>
-          <span style={{ color: "#1E9301" }}>
+          <span className="text-accent-secondary">
             {profileLoading ? "..." : profile?.full_name?.split(" ")[0] ?? "there"}
           </span>
         </h1>
@@ -75,7 +84,7 @@ export function Topbar() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search assets..."
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-[#1E9301]"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-accent-secondary"
             />
           </div>
 
@@ -131,7 +140,7 @@ export function Topbar() {
                           {asset.name}
                         </span>
                       </span>
-                      <span className="text-xs font-medium text-[#17352F]">
+                      <span className="text-xs font-medium text-primary">
                         {asset.asset_prices?.price != null
                           ? `${asset.asset_prices.currency} ${asset.asset_prices.price.toLocaleString()}`
                           : "—"}
@@ -147,6 +156,22 @@ export function Topbar() {
 
       {/* Notification + profile */}
       <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label="Toggle theme color"
+          className="relative h-7 w-14 shrink-0 rounded-full transition-colors duration-300"
+            style={{
+            backgroundColor: isBlueTheme ? "#1E3A8A" : "#17352F",
+          }}
+          
+        >
+          <span
+            className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
+              isBlueTheme ? "translate-x-7" : "translate-x-0"
+            }`}
+          />
+        </button>
         <button
           type="button"
           className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"

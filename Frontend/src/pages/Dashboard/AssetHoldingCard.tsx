@@ -9,7 +9,7 @@ export default function AssetHoldingCard() {
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-[#17352F]">
+      <h2 className="mb-4 text-lg font-semibold text-primary">
         Asset Holding
       </h2>
 
@@ -33,7 +33,7 @@ export default function AssetHoldingCard() {
 
               return (
                 <tr key={holding.id} className="border-t border-gray-50">
-                  <td className="py-2 font-medium text-[#17352F]">
+                  <td className="py-2 font-medium text-primary">
                     {holding.assets?.symbol}
                   </td>
                   <td className="py-2 text-gray-600">{holding.quantity}</td>
@@ -42,7 +42,7 @@ export default function AssetHoldingCard() {
                   </td>
                   <td
                     className={`py-2 font-medium ${
-                      isProfit ? "text-green-600" : "text-red-500"
+                      isProfit ? "text-success" : "text-danger"
                     }`}
                   >
                     {isProfit ? "+" : ""}

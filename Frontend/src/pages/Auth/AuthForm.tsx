@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Input } from "../../components/ui/input";
 import { SocialButtons } from "./socialButton";
 
@@ -80,6 +81,17 @@ export function AuthForm({
             onChange={onPasswordChange}
             required
           />
+           {isLogin && (
+            <div className="flex justify-end">
+              <Link
+                to="/forgot-password"
+                className="text-xs font-medium text-[#22C55E] hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          )}
+
           {!isLogin && (
             <div className="space-y-0.2 rounded-lg bg-gray-50 p-2.5">
               {passwordRequirements.map((requirement) => (

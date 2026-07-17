@@ -30,7 +30,7 @@ export default function HoldingTable() {
       key: "asset",
       header: "Asset",
       render: (holding) => (
-        <span className="font-medium text-[#17352F]">
+        <span className="font-medium text-primary">
           {holding.assets?.symbol ?? "-"}
         </span>
       ),
@@ -68,7 +68,7 @@ export default function HoldingTable() {
       render: (holding) => {
         const isProfit = holding.valuation.profitLossDisplay >= 0;
         return (
-          <span className={isProfit ? "text-green-600" : "text-red-500"}>
+          <span className={isProfit ? "text-success" : "text-danger"}>
             {isProfit ? "+" : ""}
             {holding.valuation.profitLossDisplay.toLocaleString()}
           </span>
@@ -85,8 +85,8 @@ export default function HoldingTable() {
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
               isProfit
-                ? "bg-[#C8F169] text-[#17352F]"
-                : "bg-red-100 text-red-600"
+                ? "bg-accent text-primary"
+                : "bg-danger-bg text-danger"
             }`}
           >
             {isProfit ? "+" : ""}
@@ -105,7 +105,7 @@ export default function HoldingTable() {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold text-[#17352F]">
+        <h2 className="text-lg font-semibold text-primary">
           Holding Table
         </h2>
 
@@ -116,7 +116,7 @@ export default function HoldingTable() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search asset..."
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-[#1E9301]"
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-accent-secondary"
           />
         </div>
       </div>

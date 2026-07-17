@@ -1,4 +1,62 @@
 import { supabase } from "../config/supabase.js";
+import axios from "axios";
+
+const EXCHANGE_API_BASE_URL =
+  "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies";
+
+export async function syncExchangeRates(baseCurrency: string = "usd") {
+  const response = await axios.get(`${EXCHANGE_API_BASE_URL}/${baseCurrency}.json`);
+  const rates = response.data[baseCurrency];
+
+  if (!rates) {
+    throw new Error(`No rates found for base currency ${baseCurrency}`);
+  }
+
+  const rowsToUpsert = Object.entries(rates).map(([targetCurrency, rate]) => ({
+    base_currency: baseCurrency.toUpperCase(),
+    target_currency: targetCurrency.toUpperCase(),
+    rate: rate as number,
+    rate_time: new Date().toISOString(),
+  }));
+
+  const { error } = await supabase
+    .from("exchange_rates")
+    .upsert(rowsToUpsert, {
+      onConflict: "base_currency,target_currency",
+    });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return rowsToUpsert.length;
+}
+
+export async function syncExchangeRatesIfStale(staleMinutes = 60, baseCurrency = "usd") {
+  const { data: latest, error } = await supabase
+    .from("exchange_rates")
+    .select("rate_time")
+    .eq("base_currency", baseCurrency.toUpperCase())
+    .order("rate_time", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!latest || latest.length === 0) {
+    return await syncExchangeRates(baseCurrency);
+  }
+
+  const ageInMinutes =
+    (Date.now() - new Date(latest[0].rate_time).getTime()) / (1000 * 60);
+
+  if (ageInMinutes >= staleMinutes) {
+    return await syncExchangeRates(baseCurrency);
+  }
+
+  return 0;
+}
 
 export async function getExchangeRate(
   baseCurrency: string,
@@ -10,6 +68,8 @@ export async function getExchangeRate(
   if (base === target) {
     return 1;
   }
+
+  await syncExchangeRatesIfStale(60, base.toLowerCase());
 
   const { data, error } = await supabase
     .from("exchange_rates")

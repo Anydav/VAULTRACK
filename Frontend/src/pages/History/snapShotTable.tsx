@@ -69,8 +69,8 @@ export default function SnapshotTable() {
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
               isProfit
-                ? "bg-[#C8F169] text-[#17352F]"
-                : "bg-red-100 text-red-600"
+                ? "bg-success-bg text-success"
+                : "bg-danger-bg text-danger"
             }`}
           >
             {isProfit ? "+" : ""}
@@ -83,7 +83,7 @@ export default function SnapshotTable() {
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-[#17352F]">
+      <h2 className="mb-4 text-lg font-semibold text-primary">
         Snapshot Table
       </h2>
 

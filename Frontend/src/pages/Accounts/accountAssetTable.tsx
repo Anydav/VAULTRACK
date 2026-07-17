@@ -26,7 +26,7 @@ export default function AccountAssetsTable({
       key: "asset",
       header: "Asset",
       render: (holding) => (
-        <span className="font-medium text-[#17352F]">
+        <span className="font-medium text-primary">
           {holding.assets?.symbol ?? "-"}
         </span>
       ),
@@ -49,7 +49,7 @@ export default function AccountAssetsTable({
       render: (holding) => {
         const isProfit = holding.valuation.profitLossDisplay >= 0;
         return (
-          <span className={isProfit ? "text-green-600" : "text-red-500"}>
+          <span className={isProfit ? "text-success" : "text-danger"}>
             {isProfit ? "+" : ""}
             {holding.valuation.profitLossDisplay.toLocaleString()}
           </span>
@@ -66,8 +66,8 @@ export default function AccountAssetsTable({
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
               isProfit
-                ? "bg-[#C8F169] text-[#17352F]"
-                : "bg-red-100 text-red-600"
+                ? "bg-success-bg text-success"
+                : "bg-danger-bg text-danger"
             }`}
           >
             {isProfit ? "+" : ""}
@@ -80,7 +80,7 @@ export default function AccountAssetsTable({
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-[#17352F]">Assets</h2>
+      <h2 className="mb-4 text-lg font-semibold text-primary">Assets</h2>
 
       <Table
         columns={columns}

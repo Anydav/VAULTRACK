@@ -2,6 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Brand colors */
+  --color-primary: #17352F;
+  --color-accent: #C8F169;
+  --color-accent-secondary: #1E9301;
+
+  /* Structural colors */
+  --color-background: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-text: #17352F;
+  --color-text-muted: #94A3B8;
+  --color-border: #F1F5F9;
+
+  /* Semantic feedback colors */
+  --color-success: #16A34A;
+  --color-success-bg: #b6f8ce;
+  --color-danger: #DC2626;
+  --color-danger-bg: #FEE2E2;
+
+  --color-highlight-bg: #FFF7D6;
+}
+
+.theme-blue {
+  --color-primary: #1E3A8A;
+  --color-accent: #93C5FD;
+  --color-accent-secondary: #2563EB;
+  --color-highlight-bg: #DBEAFE;
+}
+
 html, body, #root {
   height: 100%;
 }
