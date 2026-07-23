@@ -59,7 +59,7 @@ export default function AnalysisChart() {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[#17352F]">Analysis</h2>
+        <h2 className="text-lg font-semibold text-primary">Analysis</h2>
 
         <div className="flex gap-1">
           {RANGE_OPTIONS.map((option) => (
@@ -69,7 +69,7 @@ export default function AnalysisChart() {
               onClick={() => setRange(option)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                 range === option
-                  ? "bg-[#C8F169] text-[#17352F]"
+                  ? "bg-accent text-primary"
                   : "text-gray-400 hover:bg-gray-100"
               }`}
             >
@@ -92,8 +92,8 @@ export default function AnalysisChart() {
             <AreaChart data={filteredData}>
               <defs>
                 <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#17352F" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#17352F" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
@@ -121,7 +121,7 @@ export default function AnalysisChart() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#17352F"
+                stroke="var(--color-primary)"
                 strokeWidth={2}
                 fill="url(#portfolioGradient)"
               />

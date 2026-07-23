@@ -4,7 +4,7 @@ import { Topbar } from "./Topbar";
 
 export function MainLayout() {
   return (
-    <div className="flex min-h-screen gap-4 bg-[#F8FAFC] p-4">
+    <div className="flex min-h-screen gap-4 bg-background p-4">
       <div className="sticky top-4 self-start">
         <Sidebar />
       </div>

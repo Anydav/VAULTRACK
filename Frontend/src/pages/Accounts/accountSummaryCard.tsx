@@ -53,7 +53,7 @@ export default function AccountSummaryCard({
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
         <div className="flex min-h-[100px] flex-col items-center justify-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-[#17352F]" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-primary" />
           <p className="text-sm font-medium text-gray-400">
             Loading account...
           </p>
@@ -78,17 +78,17 @@ export default function AccountSummaryCard({
         <div>
           
           <p className="mt-1 text-xs text-gray-400">Holdings</p>
-          <p className="text-lg font-bold text-[#17352F]">{count}</p>
+          <p className="text-lg font-bold text-primary">{count}</p>
         </div>
         <div>
           <p className="text-xs text-gray-400">Total Value</p>
-          <p className="text-lg font-bold text-[#17352F]">
+          <p className="text-lg font-bold text-primary">
              {totalValue.toLocaleString()}
           </p>
         </div>
         <div>
           <p className="text-xs text-gray-400">Total Cost</p>
-          <p className="text-lg font-bold text-[#17352F]">
+          <p className="text-lg font-bold text-primary">
              {totalCost.toLocaleString()}
           </p>
         </div>
@@ -96,7 +96,7 @@ export default function AccountSummaryCard({
           <p className="text-xs text-gray-400">Total Profit</p>
           <p
             className={`text-lg font-bold ${
-              isProfit ? "text-green-600" : "text-red-500"
+              isProfit ? "text-success" : "text-danger"
             }`}
           >
             {isProfit ? "+" : ""}

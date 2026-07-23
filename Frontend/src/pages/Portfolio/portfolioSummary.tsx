@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { getDashboardSummary } from "../../services/dashboard.service";
 import { getAccounts } from "../../services/account.service";
+import { LoadingSpinner } from "../../components/ui/loadingSpinner";
+import { EmptyState } from "../../components/ui/emptyState";
 
 export default function PortfolioSummary() {
   const { data: summary, isLoading: summaryLoading } = useQuery({
@@ -16,12 +18,7 @@ export default function PortfolioSummary() {
   if (summaryLoading || accountsLoading) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-        <div className="flex min-h-[160px] flex-col items-center justify-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-[#17352F]" />
-          <p className="text-sm font-medium text-gray-400">
-            Loading summary...
-          </p>
-        </div>
+        <LoadingSpinner message="Loading summary..." />
       </div>
     );
   }
@@ -29,14 +26,10 @@ export default function PortfolioSummary() {
   if (!summary) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-        <div className="flex min-h-[160px] flex-col items-center justify-center gap-2">
-          <p className="text-base font-semibold text-gray-500">
-            No data available
-          </p>
-          <p className="text-sm text-gray-400">
-            Check back once your portfolio data is ready.
-          </p>
-        </div>
+        <EmptyState
+          title="No data available"
+          description="Check back once your portfolio data is ready."
+        />
       </div>
     );
   }
@@ -65,7 +58,7 @@ export default function PortfolioSummary() {
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-[#17352F]">
+      <h2 className="mb-4 text-lg font-semibold text-primary">
         Portfolio Summary
       </h2>
 
@@ -73,12 +66,12 @@ export default function PortfolioSummary() {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="rounded-xl bg-[#FFF7D6] p-4"
+            className="rounded-xl bg-highlight-bg p-4"
           >
             <p className="text-xs text-gray-500">{stat.label}</p>
             <p
               className={`mt-1 text-lg font-bold ${
-                stat.highlight ? "text-green-600" : "text-[#17352F]"
+                stat.highlight ? "text-success" : "text-primary"
               }`}
             >
               {stat.value}
