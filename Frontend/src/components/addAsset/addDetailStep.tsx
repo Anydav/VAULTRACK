@@ -47,7 +47,7 @@ export default function AssetDetailsStep() {
       <div>
         <div className="mb-1 flex items-center justify-between">
           <label className="text-xs text-gray-500">Quantity</label>
-          <span className="text-sm font-semibold text-[#17352F]">
+          <span className="text-sm font-semibold text-primary">
             {quantity || "0"}
           </span>
         </div>
@@ -58,7 +58,7 @@ export default function AssetDetailsStep() {
           step={0.01}
           value={quantity || "0"}
           onChange={(e) => setQuantity(e.target.value)}
-          className="w-full accent-[#17352F]"
+          className="w-full accent-primary"
         />
         <input
           type="number"
@@ -67,7 +67,7 @@ export default function AssetDetailsStep() {
           onChange={(e) => setQuantity(e.target.value)}
           placeholder="Or type an exact amount"
           required
-          className="mt-2 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#17352F]"
+          className="mt-2 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
         />
       </div>
 
@@ -86,12 +86,13 @@ export default function AssetDetailsStep() {
           <button
             type="button"
             onClick={() => {
-              if (selectedAsset?.asset_prices?.price != null) {
-                setCostPrice(String(selectedAsset.asset_prices.price));
+              if (selectedAsset?.asset_prices?.priceDisplay != null) {
+                setCostPrice(String(selectedAsset.asset_prices.priceDisplay));
+                setCostCurrency(selectedAsset.asset_prices.displayCurrency);
               }
             }}
-            disabled={selectedAsset?.asset_prices?.price == null}
-            className="whitespace-nowrap rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-[#17352F] hover:text-[#17352F] disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={selectedAsset?.asset_prices?.priceDisplay == null}
+            className="whitespace-nowrap rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
           >
             Current Price
           </button>

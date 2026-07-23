@@ -2,7 +2,39 @@ import { supabase } from "../config/supabase.js";
 import { CreateAssetInput, SearchAssetInput } from "../types/asset.types.js";
 import { searchCryptoAssetsFromCoinGecko } from "./coinGecko.service.js";
 import { syncCryptoPricesIfStale } from "./price.service.js";
+import {getUserCurrencyContext,getExchangeRate,convertCurrency} from "./currency.service.js";
 
+async function attachDisplayPrices(assets: any[], userId: string) {
+  const { displayCurrency } = await getUserCurrencyContext(userId);
+
+  return Promise.all(
+    assets.map(async (asset) => {
+      const rawPrice = asset.asset_prices?.price;
+      const priceCurrency = asset.asset_prices?.currency;
+
+      if (rawPrice == null || !priceCurrency) {
+        return {
+          ...asset,
+          asset_prices: asset.asset_prices
+            ? { ...asset.asset_prices, priceDisplay: null, displayCurrency }
+            : null,
+        };
+      }
+
+      const rate = await getExchangeRate(priceCurrency, displayCurrency);
+      const priceDisplay = convertCurrency(rawPrice, rate);
+
+      return {
+        ...asset,
+        asset_prices: {
+          ...asset.asset_prices,
+          priceDisplay,
+          displayCurrency,
+        },
+      };
+    })
+  );
+}
 export async function createAsset(input: CreateAssetInput) {
   const { symbol, name, assetType, market, currency } = input;
 
@@ -28,7 +60,7 @@ export async function createAsset(input: CreateAssetInput) {
   return data;
 }
 
-export async function searchAssets(input: SearchAssetInput) {
+export async function searchAssets(input: SearchAssetInput, userId: string) {
   const { market, query } = input;
 
   const normalizedMarket = market.toUpperCase().trim();
@@ -46,8 +78,8 @@ export async function searchAssets(input: SearchAssetInput) {
   if (localError) {
     throw new Error(localError.message);
   }
-  if (localAssets && localAssets.length > 0) {
-    return localAssets;
+ if (localAssets && localAssets.length > 0) {
+    return await attachDisplayPrices(localAssets, userId);
   }
   if (normalizedMarket !== "CRYPTO") {
     return [];
@@ -98,5 +130,5 @@ export async function searchAssets(input: SearchAssetInput) {
     throw new Error(pricedError.message);
   }
 
-  return pricedAssets;
+  return await attachDisplayPrices(pricedAssets, userId);
 }
