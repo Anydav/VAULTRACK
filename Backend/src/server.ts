@@ -10,6 +10,7 @@ import userAssetRoutes from "./routes/userAsset.routes.js";
 import priceRoutes from "./routes/price.routes.js";
 import dashboardRoutes from "./routes/dashbaord.routes.js";
 import snapshotRoutes from "./routes/snapshot.routes.js";
+import analysisRoutes from "./routes/analysis.routes.js";
 import { startSnapshotJob } from "./jobs/snapshot.job.js";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -69,7 +70,7 @@ app.use("/api/user-assets", userAssetRoutes);
 app.use("/api/prices", priceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/snapshots", snapshotRoutes);
-
+app.use("/api/analysis", analysisRoutes);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
