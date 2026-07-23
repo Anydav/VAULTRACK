@@ -73,6 +73,9 @@ export async function getUserAssets(userId: string) {
     .single();
 
   if (profileError) {
+    if (profileError.code === "PGRST116") {
+      throw new Error("No profile found for this user.");
+    }
     throw new Error(profileError.message);
   }
 
