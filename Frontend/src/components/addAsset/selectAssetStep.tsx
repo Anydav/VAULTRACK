@@ -59,17 +59,17 @@ export default function SelectAssetStep() {
               key={asset.id}
               type="button"
               onClick={() => handleSelectAsset(asset)}
-              className="flex w-full items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-left text-sm hover:border-[#17352F] hover:bg-gray-50"
+              className="flex w-full items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-left text-sm hover:border-primary hover:bg-gray-50"
             >
               <span className="flex flex-col items-start">
-                <span className="font-medium text-[#17352F]">
+                <span className="font-medium text-primary">
                   {asset.symbol}
                 </span>
                 <span className="text-xs text-gray-400">{asset.name}</span>
               </span>
-              <span className="text-xs font-medium text-[#17352F]">
-                {asset.asset_prices?.price != null
-                  ? `${asset.asset_prices.currency} ${asset.asset_prices.price.toLocaleString()}`
+              <span className="text-xs font-medium text-primary">
+                {asset.asset_prices?.priceDisplay != null
+                  ? `${asset.asset_prices.displayCurrency} ${asset.asset_prices.priceDisplay.toLocaleString()}`
                   : "—"}
               </span>
             </button>

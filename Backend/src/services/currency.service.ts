@@ -1,6 +1,7 @@
 import { supabase } from "../config/supabase.js";
 import axios from "axios";
 
+export const BASE_CURRENCY = "USD";
 const EXCHANGE_API_BASE_URL =
   "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies";
 
@@ -93,4 +94,32 @@ export async function getExchangeRate(
 
 export function convertCurrency(amount: number, rate: number) {
   return amount * rate;
+}
+export async function getUserCurrencyContext(userId: string) {
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("preferred_currency")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    displayCurrency: profile?.preferred_currency || "USD",
+  };
+}
+
+export async function convertAmount(
+  amount: number,
+  fromCurrency: string,
+  toCurrency: string
+) {
+  const rate = await getExchangeRate(fromCurrency, toCurrency);
+
+  return {
+    amount: convertCurrency(amount, rate),
+    rate,
+  };
 }

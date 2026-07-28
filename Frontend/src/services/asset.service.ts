@@ -1,10 +1,13 @@
 import api from "./api";
 import type { Asset } from "../types/asset";
 
-export async function searchAssets(query: string): Promise<Asset[]> {
+export async function searchAssets(
+  query: string,
+  market: string = "CRYPTO"
+): Promise<Asset[]> {
   const response = await api.get("/assets", {
     params: {
-      market: "CRYPTO",
+      market,
       query,
     },
   });

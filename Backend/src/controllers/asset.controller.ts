@@ -3,6 +3,13 @@ import { searchAssets } from "../services/asset.service.js";
 
 export async function searchAssetsController(req: Request, res: Response) {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
     const market = req.query.market as string;
     const query = req.query.query as string;
 
@@ -13,10 +20,13 @@ export async function searchAssetsController(req: Request, res: Response) {
       });
     }
 
-    const assets = await searchAssets({
-      market,
-      query,
-    });
+    const assets = await searchAssets(
+      {
+        market,
+        query,
+      },
+      req.user.userId
+    );
 
     return res.status(200).json({
       success: true,

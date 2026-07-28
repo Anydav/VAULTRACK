@@ -1,5 +1,4 @@
-import { supabase } from "../config/supabase.js";
-import { getExchangeRate, convertCurrency } from "./currency.service.js";
+import { getExchangeRate, convertCurrency, getUserCurrencyContext, BASE_CURRENCY } from "./currency.service.js";
 import { getUserAssets } from "./userAsset.service.js";
 import {
   syncCryptoPricesIfStale
@@ -8,21 +7,9 @@ import {
 export async function getDashboardSummary(userId: string) {
   await syncCryptoPricesIfStale();
 
-  const { data: profile, error: profileError } = await supabase
-  .from("profiles")
-  .select("preferred_currency")
-  .eq("id", userId)
-  .single();
-
-if (profileError) {
-  throw new Error(profileError.message);
-}
-
-const displayCurrency = profile?.preferred_currency || "USD";
-const baseCurrency = "USD";
-
-const exchangeRate = await getExchangeRate(baseCurrency, displayCurrency);
-
+  const baseCurrency = BASE_CURRENCY;
+  const { displayCurrency } = await getUserCurrencyContext(userId);
+  const exchangeRate = await getExchangeRate(baseCurrency, displayCurrency);
   const holdings = await getUserAssets(userId);
 
   const summary = holdings.reduce(

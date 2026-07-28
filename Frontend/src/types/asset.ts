@@ -10,5 +10,7 @@ export interface Asset {
     price: number;
     currency: string;
     price_time: string;
+    priceDisplay: number | null;
+    displayCurrency: string ;
   } | null;
 }

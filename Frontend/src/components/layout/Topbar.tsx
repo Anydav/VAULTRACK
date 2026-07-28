@@ -30,10 +30,16 @@ export function Topbar() {
   });
 
   const { data: marketResults = [], isFetching: marketLoading } = useQuery({
-    queryKey: ["asset-search", debouncedQuery],
-    queryFn: () => searchAssets(debouncedQuery),
-    enabled: debouncedQuery.length > 0,
-  });
+  queryKey: ["asset-search", debouncedQuery],
+  queryFn: async () => {
+    const [crypto, ngx] = await Promise.all([
+      searchAssets(debouncedQuery, "CRYPTO"),
+      searchAssets(debouncedQuery, "NGX"),
+    ]);
+    return [...crypto, ...ngx];
+  },
+  enabled: debouncedQuery.length > 0,
+});
 
   const matchingHoldings = holdings.filter((holding) =>
     holding.assets?.symbol
@@ -141,8 +147,8 @@ export function Topbar() {
                         </span>
                       </span>
                       <span className="text-xs font-medium text-primary">
-                        {asset.asset_prices?.price != null
-                          ? `${asset.asset_prices.currency} ${asset.asset_prices.price.toLocaleString()}`
+                        {asset.asset_prices?.priceDisplay != null
+                          ? `${asset.asset_prices.displayCurrency} ${asset.asset_prices.priceDisplay.toLocaleString()}`
                           : "—"}
                       </span>
                     </button>

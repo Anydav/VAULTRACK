@@ -1,6 +1,6 @@
 import { supabase } from "../config/supabase.js";
 import { CreateUserAssetInput } from "../types/userAsset.types.js";
-import { getExchangeRate, convertCurrency } from "./currency.service.js";
+import {getUserCurrencyContext,getExchangeRate,convertCurrency, BASE_CURRENCY} from "./currency.service.js";
 
 export async function createUserAsset(input: CreateUserAssetInput) {
   const {
@@ -66,21 +66,8 @@ export async function createUserAsset(input: CreateUserAssetInput) {
 }
 
 export async function getUserAssets(userId: string) {
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("preferred_currency")
-    .eq("id", userId)
-    .single();
-
-  if (profileError) {
-    if (profileError.code === "PGRST116") {
-      throw new Error("No profile found for this user.");
-    }
-    throw new Error(profileError.message);
-  }
-
-  const baseCurrency = "USD";
-  const displayCurrency = profile?.preferred_currency || "USD";
+  const baseCurrency = BASE_CURRENCY;
+  const { displayCurrency } = await getUserCurrencyContext(userId);
   const exchangeRate = await getExchangeRate(baseCurrency, displayCurrency);
 
   const { data, error } = await supabase

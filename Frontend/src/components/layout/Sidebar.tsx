@@ -54,7 +54,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-8">
         <img src={Logo} alt="VaultTrack Logo" className="h-8 w-8" />
-        <p className="text-xl font-bold text-[#FFD85B]">VaultTrack</p>
+        <p className="text-xl font-bold text-[#efeeea]">VaultTrack</p>
       </div>
 
       {/* Navigation */}
