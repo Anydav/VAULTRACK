@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware.js";
+import { analysisRateLimiter } from "../middleware/rateLimit.middleware.js";
 import { getPortfolioAnalysis } from "../services/analysis.service.js";
 import { getUserAssets } from "../services/userAsset.service.js";
 
 const router = Router();
 
-router.post("/ask", authMiddleware, async (req, res) => {
+router.post("/ask", authMiddleware, analysisRateLimiter, async (req, res) => {
   try {
     const userId = req.user.userId;
     const { question } = req.body;
