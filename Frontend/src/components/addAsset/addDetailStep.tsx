@@ -6,12 +6,15 @@ import { useAddAssetModal } from "../../context/addAssetModelcontext";
 export default function AssetDetailsStep() {
   const [quantity, setQuantity] = useState("");
   const [costPrice, setCostPrice] = useState("");
-  const [costCurrency, setCostCurrency] = useState("USD");
   const [acquiredAt, setAcquiredAt] = useState("");
 
   const queryClient = useQueryClient();
   const { selectedAccountId, selectedAsset, closeModal } =
     useAddAssetModal();
+
+  const [costCurrency, setCostCurrency] = useState(
+    selectedAsset?.asset_prices?.displayCurrency ?? "USD"
+  );
 
   const selectedAssetId = selectedAsset?.id ?? null;
 
@@ -104,11 +107,11 @@ export default function AssetDetailsStep() {
           Cost currency
         </label>
         <input
-          type="text"
-          value={costCurrency}
-          onChange={(e) => setCostCurrency(e.target.value)}
-          className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#17352F]"
-        />
+  type="text"
+  value={costCurrency}
+  disabled
+  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 outline-none"
+/>
       </div>
 
       <div>

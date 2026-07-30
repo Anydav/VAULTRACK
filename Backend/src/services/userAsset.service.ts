@@ -1,29 +1,39 @@
 import { supabase } from "../config/supabase.js";
 import { CreateUserAssetInput } from "../types/userAsset.types.js";
-import {getUserCurrencyContext,getExchangeRate,convertCurrency, BASE_CURRENCY} from "./currency.service.js";
+import {getUserCurrencyContext,getExchangeRate,convertCurrency,convertAmount, BASE_CURRENCY} from "./currency.service.js";
+
+
 
 export async function createUserAsset(input: CreateUserAssetInput) {
+  
   const {
-    userId,
-    accountId,
-    assetId,
-    quantity,
-    costPrice,
-    costCurrency,
-    acquiredAt,
-  } = input;
+  userId,
+  accountId,
+  assetId,
+  quantity,
+  costPrice,
+  costCurrency,
+  acquiredAt,
+} = input;
 
-  const { data, error } = await supabase
-    .from("user_assets")
-    .insert({
-      user_id: userId,
-      account_id: accountId,
-      asset_id: assetId,
-      quantity,
-      cost_price: costPrice,
-      cost_currency: costCurrency,
-      acquired_at: acquiredAt,
-    })
+let normalizedCostPrice = costPrice;
+
+if (costPrice != null && costCurrency) {
+  const { amount } = await convertAmount(costPrice, costCurrency, BASE_CURRENCY);
+  normalizedCostPrice = amount;
+}
+
+const { data, error } = await supabase
+  .from("user_assets")
+  .insert({
+    user_id: userId,
+    account_id: accountId,
+    asset_id: assetId,
+    quantity,
+    cost_price: normalizedCostPrice,
+    cost_currency: BASE_CURRENCY,
+    acquired_at: acquiredAt,
+  })
     .select(
       `
       id,
