@@ -55,13 +55,14 @@ export async function getPortfolioAnalysis(enrichedAssets: any[], question: stri
 
     return response.json();
   } catch (error) {
-    console.error("[analysis.service] ERROR:", error);
+  console.error("[analysis.service] ERROR:", error);
 
-    if (error.name === "AbortError") {
+  if (error instanceof Error && error.name === "AbortError") {
+    throw new Error("Analysis service timed out. Please try again.");
+  }
+
+  throw new Error("Could not reach the analysis service.");
+}
       throw new Error("Analysis service timed out. Please try again.");
     }
 
-    throw new Error("Could not reach the analysis service.");
-  }
-
-}

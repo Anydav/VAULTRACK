@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard/Dashboard'
 import Portfolio from './pages/Portfolio/portfolio'
 import AccountDetail from './pages/Accounts/accountDetail'
 import History from './pages/History/history'
+import Analysis from './pages/Analysis/portfolioAi'
 import { AddAssetModalProvider } from "./context/addAssetModelcontext";
 import AddAssetModal from "./components/addAsset/addAssetModel";
 
@@ -26,7 +27,7 @@ export default function App() {
           <Route path="accounts/:accountId" element={<AccountDetail />} />
           <Route path="assets" element={<Placeholder title="Assets" />} />
           <Route path="history" element={<History />} />
-          <Route path="settings" element={<Placeholder title="Settings" />} />
+          <Route path="Analysis" element={<Analysis />} />
         </Route>
       </Routes>
 

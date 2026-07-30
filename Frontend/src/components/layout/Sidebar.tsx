@@ -21,7 +21,7 @@ const topNavItems = [
 
 const bottomNavItems = [
   { label: "History", path: "/history", icon: HistoryIcon },
-  { label: "Settings", path: "/settings", icon: SettingsIcon },
+  { label: "Analysis", path: "/Analysis", icon: SettingsIcon },
 ];
 
 export function Sidebar() {

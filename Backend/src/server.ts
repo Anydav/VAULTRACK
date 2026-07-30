@@ -12,6 +12,7 @@ import dashboardRoutes from "./routes/dashbaord.routes.js";
 import snapshotRoutes from "./routes/snapshot.routes.js";
 import analysisRoutes from "./routes/analysis.routes.js";
 import { startSnapshotJob } from "./jobs/snapshot.job.js";
+import { startNgxSyncJob } from "./jobs/ngxSync.job.js";
 import cookieParser from "cookie-parser";
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use(
   })
 );
 startSnapshotJob();
+startNgxSyncJob();
 app.use(express.json());
 
 app.use(cookieParser());
