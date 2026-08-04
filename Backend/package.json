@@ -15,6 +15,13 @@
   "type": "module",
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.9.5",
+    "@types/node-cron": "^3.0.11",
     "axios": "^1.17.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
@@ -23,18 +30,11 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.1",
     "jsonwebtoken": "^9.0.3",
-    "node-cron": "^4.2.1"
+    "node-cron": "^4.2.1",
+    "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/cookie-parser": "^1.4.10",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.9.5",
-    "@types/node-cron": "^3.0.11",
     "nodemon": "^3.1.14",
-    "tsx": "^4.22.4",
-    "typescript": "^6.0.3"
+    "tsx": "^4.22.4"
   }
 }
