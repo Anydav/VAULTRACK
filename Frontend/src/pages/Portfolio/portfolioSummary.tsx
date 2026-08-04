@@ -59,7 +59,7 @@ export default function PortfolioSummary() {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <h2 className="mb-4 text-lg font-semibold text-primary">
-        Portfolio Summary
+        Portfolio  Summary
       </h2>
 
       <div className="grid grid-cols-2 gap-3">
