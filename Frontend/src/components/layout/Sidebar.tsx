@@ -8,7 +8,7 @@ import { logout } from "../../services/auth.service";
 
 import Logo from "../../assets/Vector.png";
 import DashboardIcon from "../../assets/Category.png";
-import PortfolioIcon from "../../assets/Chat.png";
+import PortfolioIcon from "../../assets/chat.png";
 import AccountsIcon from "../../assets/stats.png";
 import AssetsIcon from "../../assets/Search.png";
 import HistoryIcon from "../../assets/Chart.png";
