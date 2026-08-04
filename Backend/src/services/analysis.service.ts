@@ -17,7 +17,8 @@ interface AnalyzeResponse {
   answer: string;
 }
 
-const FLASK_URL = process.env.FLASK_ANALYSIS_URL || "http://127.0.0.1:5001";
+const FLASK_URL = process.env.FLASK_ANALYSIS_URL;
+// || "http://127.0.0.1:5001"
 
 function mapToFlaskHoldings(enrichedAssets: any[]): FlaskHolding[] {
   return enrichedAssets.map((holding) => ({
