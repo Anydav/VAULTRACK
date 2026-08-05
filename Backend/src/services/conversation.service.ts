@@ -93,12 +93,13 @@ export async function saveConversationTurn(
 /**
  * Returns a user's full conversation history for UI browsing (unfiltered by fold status).
  */
-export async function getConversationHistory(userId: string) {
+export async function getConversationHistory(userId: string, limit: number = 10) {
   const { data, error } = await supabase
     .from("conversations")
     .select("id, question, answer, created_at")
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("[conversation.service] Failed to fetch history:", error);

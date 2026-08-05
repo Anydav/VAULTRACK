@@ -40,4 +40,17 @@ router.post("/ask", authMiddleware, analysisRateLimiter, async (req: Request, re
 }
 });
 
+router.get("/history", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
+
+    const history = await getConversationHistory(userId, limit);
+    res.json({ conversations: history });
+  } catch (err) {
+    console.error("[analysis] History fetch ERROR:", err);
+    res.status(500).json({ error: err.message || "Failed to fetch conversation history" });
+  }
+});
+
 export default router;
