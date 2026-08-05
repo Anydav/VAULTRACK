@@ -3,6 +3,7 @@ import { authMiddleware } from "../middleware/auth.middleware.js";
 import { analysisRateLimiter } from "../middleware/rateLimit.middleware.js";
 import { getPortfolioAnalysis } from "../services/analysis.service.js";
 import { getUserAssets } from "../services/userAsset.service.js";
+import { getMemoryContext, saveConversationTurn } from "../services/conversation.service.js";
 
 const router = Router();
 
@@ -19,10 +20,15 @@ router.post("/ask", authMiddleware, analysisRateLimiter, async (req, res) => {
     const enrichedAssets = await getUserAssets(userId);
     console.log("[analysis] Fetched assets from Supabase:", enrichedAssets.length, "holdings");
 
-    const result = await getPortfolioAnalysis(enrichedAssets, question);
+    const { memory_summary, recent_messages } = await getMemoryContext(userId);
+    console.log("[analysis] Memory context:", { summaryLength: memory_summary.length, recentCount: recent_messages.length });
+
+    const result = await getPortfolioAnalysis(enrichedAssets, question, memory_summary, recent_messages);
     console.log("[analysis] Flask response received:", result.summary?.total_value_usd);
 
-    res.json(result);
+    await saveConversationTurn(userId, question, result.answer, result.updated_memory);
+
+    res.json({ summary: result.summary, answer: result.answer });
   } catch (err) {
     console.error("[analysis] ERROR:", err);
     res.status(500).json({ error: err.message || "Failed to analyze portfolio" });
