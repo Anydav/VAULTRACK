@@ -1,5 +1,5 @@
 import PortfolioSummary from "./portfolioSummary";
-import AllocationChart from "./AllocationChart";
+import AllocationChart from "./allocationChart";
 import HoldingTable from "./holdingTable";
 
 export default function Portfolio() {

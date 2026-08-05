@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { analysisRateLimiter } from "../middleware/rateLimit.middleware.js";
 import { getPortfolioAnalysis } from "../services/analysis.service.js";
@@ -7,8 +7,12 @@ import { getMemoryContext, saveConversationTurn } from "../services/conversation
 
 const router = Router();
 
-router.post("/ask", authMiddleware, analysisRateLimiter, async (req, res) => {
+router.post("/ask", authMiddleware, analysisRateLimiter, async (req: Request, res: Response) => {
   try {
+
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     const userId = req.user.userId;
     const { question } = req.body;
     console.log("[analysis] Incoming request:", { userId, question });
@@ -30,9 +34,10 @@ router.post("/ask", authMiddleware, analysisRateLimiter, async (req, res) => {
 
     res.json({ summary: result.summary, answer: result.answer });
   } catch (err) {
-    console.error("[analysis] ERROR:", err);
-    res.status(500).json({ error: err.message || "Failed to analyze portfolio" });
-  }
+  console.error("[analysis] ERROR:", err);
+  const message = err instanceof Error ? err.message : "Failed to analyze portfolio";
+  res.status(500).json({ error: message });
+}
 });
 
 export default router;
