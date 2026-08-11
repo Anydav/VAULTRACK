@@ -138,8 +138,8 @@ export async function meController(req: Request, res: Response) {
 export async function logoutController(req: Request, res: Response) {
   res.clearCookie("vaulttrack_token", {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: true,
+    sameSite: "none",
   });
 
   return res.status(200).json({
