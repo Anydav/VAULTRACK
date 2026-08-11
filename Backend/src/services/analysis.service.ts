@@ -25,7 +25,7 @@ interface AnalyzeResponse {
   updated_memory: UpdatedMemory | null;
 }
 
-const FLASK_URL = process.env.FLASK_ANALYSIS_URL || "http://127.0.0.1:5001";
+const FLASK_URL = process.env.FLASK_ANALYSIS_URL;
 
 function mapToFlaskHoldings(enrichedAssets: any[]): FlaskHolding[] {
   return enrichedAssets.map((holding) => ({
@@ -75,7 +75,7 @@ export async function getPortfolioAnalysis(
   } catch (error) {
     console.error("[analysis.service] ERROR:", error);
 
-    if (error.name === "AbortError") {
+    if (error instanceof Error && error.name === "AbortError") {
       throw new Error("Analysis service timed out. Please try again.");
     }
 
