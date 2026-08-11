@@ -75,7 +75,7 @@ export async function getPortfolioAnalysis(
   } catch (error) {
     console.error("[analysis.service] ERROR:", error);
 
-    if (error.name === "AbortError") {
+    if (error instanceof Error && error.name === "AbortError") {
       throw new Error("Analysis service timed out. Please try again.");
     }
 

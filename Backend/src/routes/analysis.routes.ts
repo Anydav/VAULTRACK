@@ -3,7 +3,7 @@ import { authMiddleware } from "../middleware/auth.middleware.js";
 import { analysisRateLimiter } from "../middleware/rateLimit.middleware.js";
 import { getPortfolioAnalysis } from "../services/analysis.service.js";
 import { getUserAssets } from "../services/userAsset.service.js";
-import { getMemoryContext, saveConversationTurn } from "../services/conversation.service.js";
+import { getMemoryContext, saveConversationTurn, getConversationHistory } from "../services/conversation.service.js";
 
 const router = Router();
 
@@ -40,8 +40,12 @@ router.post("/ask", authMiddleware, analysisRateLimiter, async (req: Request, re
 }
 });
 
-router.get("/history", authMiddleware, async (req, res) => {
+router.get("/history", authMiddleware, async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     const userId = req.user.userId;
     const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
 
@@ -49,7 +53,8 @@ router.get("/history", authMiddleware, async (req, res) => {
     res.json({ conversations: history });
   } catch (err) {
     console.error("[analysis] History fetch ERROR:", err);
-    res.status(500).json({ error: err.message || "Failed to fetch conversation history" });
+    const message = err instanceof Error ? err.message : "Failed to fetch conversation history";
+    res.status(500).json({ error: message });
   }
 });
 
