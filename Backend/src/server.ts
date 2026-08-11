@@ -19,13 +19,16 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-     origin: (origin, callback) => {
-       const allowed = ['http://localhost:5173', 'https://vaultrack.vercel.app'];
-       if (!origin || allowed.includes(origin)) callback(null, true);
-       else callback(new Error('Not allowed by CORS'));
-     },
-     credentials: true
-   }));
+  origin: (origin, callback) => {
+    const allowed = ['http://localhost:5173', 'https://vaultrack.vercel.app'];
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false); // reject cleanly, don't throw
+    }
+  },
+  credentials: true
+}));
 startSnapshotJob();
 startNgxSyncJob();
 app.use(express.json());
