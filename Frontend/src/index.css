@@ -4,9 +4,10 @@
 
 :root {
   /* Brand colors */
-  --color-primary: #17352F;
-  --color-accent: #C8F169;
-  --color-accent-secondary: #1E9301;
+  --color-primary: #04005a;
+  --color-accent: #4594f0;
+  --color-accent-secondary: #2563EB;
+  
 
   /* Structural colors */
   --color-background: #F8FAFC;
@@ -21,14 +22,24 @@
   --color-danger: #DC2626;
   --color-danger-bg: #FEE2E2;
 
-  --color-highlight-bg: #FFF7D6;
+  --color-highlight-bg: #DBEAFE;
+  
 }
 
-.theme-blue {
-  --color-primary: #04005a;
-  --color-accent: #4594f0;
-  --color-accent-secondary: #2563EB;
-  --color-highlight-bg: #DBEAFE;
+
+.theme-dark{
+ --color-primary: #17352F;
+ --color-accent: #C8F169;
+ --color-accent-secondary: #1E9301;
+ --color-highlight-bg: #FFF7D6;
+}
+@keyframes toast-progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }
 
 html, body, #root {

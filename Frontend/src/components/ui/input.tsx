@@ -5,12 +5,16 @@ type InputProps = {
   label: string;
   type?: string;
   placeholder?: string;
+  autoComplete?: string;
+  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  tabIndex?: number;
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
 };
 
-export function Input({label, type = "text", placeholder, value, onChange,required = false,}: InputProps) {
+export function Input({label, type = "text", placeholder, value, onChange,required = false, onBlur, onFocus, tabIndex}: InputProps) {
 
   const  [showPassword, setShowPassword] = useState(false);
   const isPasswordType = type === "password";

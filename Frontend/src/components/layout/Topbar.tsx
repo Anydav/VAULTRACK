@@ -57,12 +57,12 @@ export function Topbar() {
     day: "numeric",
   });
   const { openAddAssetModal } = useAddAssetModal();
-  const [isBlueTheme, setIsBlueTheme] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   function toggleTheme() {
-    setIsBlueTheme((prev) => {
+    setIsDarkMode((prev) => {
       const next = !prev;
-      document.body.classList.toggle("theme-blue", next);
+      document.body.classList.toggle("theme-dark", next);
       return next;
     });
   }
@@ -168,13 +168,13 @@ export function Topbar() {
           aria-label="Toggle theme color"
           className="relative h-7 w-14 shrink-0 rounded-full transition-colors duration-300"
             style={{
-            backgroundColor: isBlueTheme ? "#1E3A8A" : "#17352F",
+            backgroundColor: isDarkMode ? "#17352F" : "#1E3A8A",
           }}
           
         >
           <span
             className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
-              isBlueTheme ? "translate-x-7" : "translate-x-0"
+              isDarkMode ? "translate-x-7" : "translate-x-0"
             }`}
           />
         </button>

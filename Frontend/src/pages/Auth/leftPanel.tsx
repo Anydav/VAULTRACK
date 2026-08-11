@@ -1,5 +1,5 @@
-import LoginImage from "../../assets/loginback.png";
-import SignupImage from "../../assets/signupback.png";
+import LoginImage from "../../assets/blue.jpg";
+import SignupImage from "../../assets/signupimg.jpg";
 
 type LeftPanelProps = {
   mode: "login" | "signup";

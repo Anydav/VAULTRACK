@@ -9,6 +9,7 @@ import History from './pages/History/history'
 import Analysis from './pages/Analysis/portfolioAi'
 import { AddAssetModalProvider } from "./context/addAssetModelcontext";
 import AddAssetModal from "./components/addAsset/addAssetModel";
+import { ToastProvider } from "./context/toastContext";
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-8">{title} - Placeholder</div>
@@ -16,6 +17,7 @@ const Placeholder = ({ title }: { title: string }) => (
 
 export default function App() {
   return (
+    <ToastProvider>
     <AddAssetModalProvider>
       <Routes>
         <Route path="/" element={<Navigate to="/auth" replace />} />
@@ -33,5 +35,6 @@ export default function App() {
 
       <AddAssetModal />
     </AddAssetModalProvider>
+    </ToastProvider>
   )
 }
