@@ -3,6 +3,7 @@ import { authMiddleware } from "../middleware/auth.middleware.js";
 import { analysisRateLimiter } from "../middleware/rateLimit.middleware.js";
 import { getPortfolioAnalysis } from "../services/analysis.service.js";
 import { getUserAssets } from "../services/userAsset.service.js";
+import { getMemoryContext, saveConversationTurn } from "../services/conversation.service.js";
 
 const router = Router();
 
@@ -23,15 +24,33 @@ router.post("/ask", authMiddleware, analysisRateLimiter, async (req: Request, re
     const enrichedAssets = await getUserAssets(userId);
     console.log("[analysis] Fetched assets from Supabase:", enrichedAssets.length, "holdings");
 
-    const result = await getPortfolioAnalysis(enrichedAssets, question);
+    const { memory_summary, recent_messages } = await getMemoryContext(userId);
+    console.log("[analysis] Memory context:", { summaryLength: memory_summary.length, recentCount: recent_messages.length });
+
+    const result = await getPortfolioAnalysis(enrichedAssets, question, memory_summary, recent_messages);
     console.log("[analysis] Flask response received:", result.summary?.total_value_usd);
 
-    res.json(result);
+    await saveConversationTurn(userId, question, result.answer, result.updated_memory);
+
+    res.json({ summary: result.summary, answer: result.answer });
   } catch (err) {
   console.error("[analysis] ERROR:", err);
   const message = err instanceof Error ? err.message : "Failed to analyze portfolio";
   res.status(500).json({ error: message });
 }
+});
+
+router.get("/history", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
+
+    const history = await getConversationHistory(userId, limit);
+    res.json({ conversations: history });
+  } catch (err) {
+    console.error("[analysis] History fetch ERROR:", err);
+    res.status(500).json({ error: err.message || "Failed to fetch conversation history" });
+  }
 });
 
 export default router;

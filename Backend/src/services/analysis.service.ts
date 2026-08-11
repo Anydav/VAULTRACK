@@ -1,9 +1,16 @@
+import { ConversationMessage } from "./conversation.service.js";
+
 interface FlaskHolding {
   symbol: string;
   type: string;
   market: string;
   current_value_usd: number;
   cost_usd: number;
+}
+
+interface UpdatedMemory {
+  summary_text: string;
+  folded_message_id: string;
 }
 
 interface AnalyzeResponse {
@@ -15,10 +22,10 @@ interface AnalyzeResponse {
     holdings: { symbol: string; current_value_usd: number; gain_loss_pct: number }[];
   };
   answer: string;
+  updated_memory: UpdatedMemory | null;
 }
 
 const FLASK_URL = process.env.FLASK_ANALYSIS_URL;
-// || "http://127.0.0.1:5001"
 
 function mapToFlaskHoldings(enrichedAssets: any[]): FlaskHolding[] {
   return enrichedAssets.map((holding) => ({
@@ -30,19 +37,29 @@ function mapToFlaskHoldings(enrichedAssets: any[]): FlaskHolding[] {
   }));
 }
 
-export async function getPortfolioAnalysis(enrichedAssets: any[], question: string) {
+export async function getPortfolioAnalysis(
+  enrichedAssets: any[],
+  question: string,
+  memorySummary: string,
+  recentMessages: ConversationMessage[]
+): Promise<AnalyzeResponse> {
   const holdings = mapToFlaskHoldings(enrichedAssets);
   console.log("[analysis.service] Sending to Flask:", JSON.stringify(holdings, null, 2));
 
   const exit = new AbortController();
-  const timoutId = setTimeout(() => exit.abort(), 10000); // 10 seconds timeout 
+  const timoutId = setTimeout(() => exit.abort(), 50000); // 50 seconds timeout
 
-  try {  
+  try {
     const response = await fetch(`${FLASK_URL}/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ holdings, question }),
-      signal: exit.signal
+      body: JSON.stringify({
+        holdings,
+        question,
+        memory_summary: memorySummary,
+        recent_messages: recentMessages,
+      }),
+      signal: exit.signal,
     });
 
     console.log("[analysis.service] Flask status:", response.status);
@@ -56,14 +73,12 @@ export async function getPortfolioAnalysis(enrichedAssets: any[], question: stri
 
     return response.json();
   } catch (error) {
-  console.error("[analysis.service] ERROR:", error);
+    console.error("[analysis.service] ERROR:", error);
 
-  if (error instanceof Error && error.name === "AbortError") {
-    throw new Error("Analysis service timed out. Please try again.");
-  }
-
-  throw new Error("Could not reach the analysis service.");
-}
+    if (error.name === "AbortError") {
       throw new Error("Analysis service timed out. Please try again.");
     }
 
+    throw new Error("Could not reach the analysis service.");
+  }
+}
