@@ -39,8 +39,8 @@ export async function signupController(req: Request, res: Response) {
 
     res.cookie("vaulttrack_token", result.token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -77,10 +77,10 @@ export async function loginController(req: Request, res: Response) {
     });
 
     res.cookie("vaulttrack_token", result.token, {
-  httpOnly: true,
-  secure: false,
-  sameSite: "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 
 return res.status(200).json({
@@ -138,8 +138,8 @@ export async function meController(req: Request, res: Response) {
 export async function logoutController(req: Request, res: Response) {
   res.clearCookie("vaulttrack_token", {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: true,
+    sameSite: "none",
   });
 
   return res.status(200).json({
