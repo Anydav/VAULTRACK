@@ -82,7 +82,7 @@ export default function SummaryCard() {
                 className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                   isProfit
                     ? "bg-accent text-primary"
-                    : "bg-red-100 text-red-600"
+                    : "bg-danger text-primary"
                 }`}
               >
                 {isProfit ? "+" : ""}
