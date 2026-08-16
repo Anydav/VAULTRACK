@@ -15,10 +15,11 @@ export default function AccountDetail() {
 
   const account = accounts.find((acc) => acc.id === accountId);
 
-  if (!accountId) {
-    return <p className="text-sm text-gray-400">Invalid account.</p>;
-  }
   const { openAddAssetModal } = useAddAssetModal();
+
+if (!accountId) {
+  return <p className="text-sm text-gray-400">Invalid account.</p>;
+}
 
   return (
     <div className="space-y-6">

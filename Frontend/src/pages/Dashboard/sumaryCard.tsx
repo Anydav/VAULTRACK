@@ -4,18 +4,20 @@ import { getAccounts } from "../../services/account.service";
 import { getSnapshotPerformance } from "../../services/snapShot.service";
 import { LoadingSpinner } from "../../components/ui/loadingSpinner";
 import { EmptyState } from "../../components/ui/emptyState";
+import {ErrorState} from "../../components/ui/errorState";
 
 export default function SummaryCard() {
-  const { data: summary, isLoading: summaryLoading } = useQuery({
+  const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = useQuery({
     queryKey: ["dashboard-summary"],
+  
     queryFn: getDashboardSummary,
   });
 
-  const { data: accounts = [], isLoading: accountsLoading } = useQuery({
+  const { data: accounts = [], isLoading: accountsLoading, isError: accountsError, refetch: refetchAccounts } = useQuery({
     queryKey: ["accounts"],
     queryFn: getAccounts,
   });
-  const { data: performance, isLoading: performanceLoading } = useQuery({
+  const { data: performance, isLoading: performanceLoading, isError: performanceError, refetch: refetchPerformance } = useQuery({
     queryKey: ["snapshot-performance"],
     queryFn: getSnapshotPerformance,
   });
@@ -27,6 +29,19 @@ export default function SummaryCard() {
       </div>
     );
   }
+  if (summaryError || accountsError || performanceError) {
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <ErrorState
+        onRetry={() => {
+          refetchSummary();
+          refetchAccounts();
+          refetchPerformance();
+        }}
+      />
+    </div>
+  );
+}
 
   if (!summary) {
     return (
@@ -44,7 +59,7 @@ export default function SummaryCard() {
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-15 sm:flex-row sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
         <div className="space-y-5">
           <h3 className="text-sm text-gray-400">Total Portfolio Value</h3>
           <h2 className="mt-1 text-3xl font-bold text-primary">

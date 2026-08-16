@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ErrorState } from "../ui/errorState";
 
 export interface TableColumn<T> {
   key: string;
@@ -12,6 +13,8 @@ interface TableProps<T> {
   data: T[];
   getRowKey: (row: T) => string;
   isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   emptyMessage?: string;
 }
 
@@ -20,13 +23,23 @@ export function Table<T>({
   data,
   getRowKey,
   isLoading,
+  isError,
+  onRetry,
   emptyMessage = "No data available",
 }: TableProps<T>) {
   if (isLoading) {
     return (
       <div className="flex min-h-[200px] flex-col items-center justify-center gap-3">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-[#17352F]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-primary" />
         <p className="text-sm font-medium text-gray-400">Loading...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex min-h-[200px] flex-col items-center justify-center">
+        <ErrorState onRetry={onRetry} />
       </div>
     );
   }

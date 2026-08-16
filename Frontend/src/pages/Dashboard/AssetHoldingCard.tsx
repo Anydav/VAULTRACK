@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { getUserAssets } from "../../services/userAssets.service";
+import { ErrorState } from "../../components/ui/errorState";
 
 export default function AssetHoldingCard() {
-  const { data: holdings = [], isLoading } = useQuery({
+  const { data: holdings = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["user-assets"],
     queryFn: getUserAssets,
   });
@@ -14,17 +15,19 @@ export default function AssetHoldingCard() {
       </h2>
 
       {isLoading ? (
-        <p className="text-sm text-gray-400">Loading holdings...</p>
+        <p className="text-sm text-gray-400">Loading holdings...</p> ): isError ? (
+        <ErrorState onRetry={() => refetch()} />
       ) : holdings.length === 0 ? (
         <p className="text-sm text-gray-400">No holdings yet.</p>
       ) : (
+        <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="text-gray-400">
               <th className="pb-2 font-medium">Asset</th>
               <th className="pb-2 font-medium">QTY</th>
               <th className="pb-2 font-medium">Current Value</th>
-              <th className="pb-2 font-medium">P/L</th>
+              <th className="pb-2 font-medium">P/L%</th>
             </tr>
           </thead>
           <tbody>
@@ -32,8 +35,8 @@ export default function AssetHoldingCard() {
               const isProfit = holding.valuation.profitLossDisplay >= 0;
 
               return (
-                <tr key={holding.id} className="border-t border-gray-50">
-                  <td className="py-2 font-medium text-primary">
+                <tr key={holding.id} className="border-t border-gray-50 transition-colors hover:bg-gray-50">
+                  <td className="py-2 font-medium  text-primary">
                     {holding.assets?.symbol}
                   </td>
                   <td className="py-2 text-gray-600">{holding.quantity}</td>
@@ -53,6 +56,7 @@ export default function AssetHoldingCard() {
             })}
           </tbody>
         </table>
+      </div>
       )}
     </div>
   );

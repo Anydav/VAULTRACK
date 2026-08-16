@@ -5,7 +5,7 @@ import { getUserAssets } from "../../services/userAssets.service";
 import { Table, type TableColumn } from "../../components/tables/table";
 import type { Holding } from "../../types/userAssets";
 
-export default function HoldingTable() {
+export default function AssetsList() {
   const [query, setQuery] = useState("");
 
   const { data: holdings = [], isLoading, isError, refetch } = useQuery({
@@ -108,11 +108,9 @@ export default function HoldingTable() {
   ];
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold text-primary">
-          Holding Table
-        </h2>
+        <h1 className="text-2xl font-bold text-primary">Assets</h1>
 
         <div className="relative w-full sm:w-64">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -126,7 +124,7 @@ export default function HoldingTable() {
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
         <Table
           columns={columns}
           data={filteredHoldings}
@@ -134,7 +132,7 @@ export default function HoldingTable() {
           isLoading={isLoading}
           isError={isError}
           onRetry={() => refetch()}
-          emptyMessage="No holdings yet"
+          emptyMessage="No assets yet"
         />
       </div>
     </div>

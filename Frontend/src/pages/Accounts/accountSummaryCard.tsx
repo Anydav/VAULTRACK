@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAccounts } from "../../services/account.service";
 import { getUserAssets } from "../../services/userAssets.service";
+import {ErrorState} from  "../../components/ui/errorState"
 
 interface AccountSummaryCardProps {
   accountId: string;
@@ -10,12 +11,12 @@ interface AccountSummaryCardProps {
 export default function AccountSummaryCard({
   accountId,
 }: AccountSummaryCardProps) {
-  const { data: accounts = [], isLoading: accountsLoading } = useQuery({
+  const { data: accounts = [], isLoading: accountsLoading, isError: accountsError, refetch: refetchAccounts } = useQuery({
     queryKey: ["accounts"],
     queryFn: getAccounts,
   });
 
-  const { data: holdings = [], isLoading: holdingsLoading } = useQuery({
+  const { data: holdings = [], isLoading: holdingsLoading, isError: holdingsError, refetch: refetchHoldings } = useQuery({
     queryKey: ["user-assets"],
     queryFn: getUserAssets,
   });
@@ -61,7 +62,18 @@ export default function AccountSummaryCard({
       </div>
     );
   }
-
+  if (accountsError || holdingsError) {
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <ErrorState
+        onRetry={() => {
+          refetchAccounts();
+          refetchHoldings();
+        }}
+      />
+    </div>
+  );
+}
   if (!account) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
