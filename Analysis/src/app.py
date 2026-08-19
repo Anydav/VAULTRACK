@@ -29,17 +29,22 @@ def analyze():
     print("[flask] Received question:", data.get("question"))
     print("[flask] Recent messages count:", len(recent_messages))
 
-    summary = compute_portfolio_summary(data["holdings"])
-    print("[flask] Computed summary:", summary)
+    try:
+        summary = compute_portfolio_summary(data["holdings"])
+        print("[flask] Computed summary:", summary)
 
-    answer = get_ai_judgment(summary, data["question"], memory_summary, recent_messages)
-    print("[flask] AI answer:", answer[:100], "...")  # first 100 chars, avoid flooding terminal
+        answer = get_ai_judgment(summary, data["question"], memory_summary, recent_messages)
+        print("[flask] AI answer:", answer[:100], "...")
 
-    updated_memory = maybe_fold_memory(memory_summary, recent_messages, data["question"], answer)
-    if updated_memory:
-        print("[flask] Memory folded, new summary length:", len(updated_memory["summary_text"]))
+        updated_memory = maybe_fold_memory(memory_summary, recent_messages, data["question"], answer)
+        if updated_memory:
+            print("[flask] Memory folded, new summary length:", len(updated_memory["summary_text"]))
 
-    return jsonify({"summary": summary, "answer": answer, "updated_memory": updated_memory})
+        return jsonify({"summary": summary, "answer": answer, "updated_memory": updated_memory})
+
+    except Exception as e:
+        print("[flask] ERROR during analysis:", e)
+        return jsonify({"error": "Failed to analyze portfolio"}), 500
 
 if __name__ == "__main__":
     app.run(port=5001)

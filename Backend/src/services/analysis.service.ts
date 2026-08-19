@@ -47,7 +47,7 @@ export async function getPortfolioAnalysis(
   console.log("[analysis.service] Sending to Flask:", JSON.stringify(holdings, null, 2));
 
   const exit = new AbortController();
-  const timoutId = setTimeout(() => exit.abort(), 50000); // 50 seconds timeout
+  const timoutId = setTimeout(() => exit.abort(), 120000); // 50 seconds timeout
 
   try {
     const response = await fetch(`${FLASK_URL}/analyze`, {
