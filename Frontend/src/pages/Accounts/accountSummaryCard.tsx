@@ -45,7 +45,7 @@ export default function AccountSummaryCard({
       totalValue: value,
       totalCost: cost,
       totalProfit: profit,
-      currency: accountHoldings[0]?.valuation.priceCurrency ?? "",
+      currency: accountHoldings[0]?.valuation.displayCurrency ?? "",
       count: accountHoldings.length,
     };
   }, [holdings, accountId]);

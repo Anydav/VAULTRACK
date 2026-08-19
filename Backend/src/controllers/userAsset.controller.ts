@@ -13,7 +13,7 @@ export async function createUserAssetController(req: Request, res: Response) {
       });
     }
 
-    if (!accountId || !assetId || !quantity) {
+    if (!accountId || !assetId || quantity === undefined || quantity === null) {
       return res.status(400).json({
         success: false,
         message: "Account, asset, and quantity are required",

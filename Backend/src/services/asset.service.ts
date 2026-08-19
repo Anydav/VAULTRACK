@@ -4,6 +4,10 @@ import { searchCryptoAssetsFromCoinGecko } from "./coinGecko.service.js";
 import { syncCryptoPricesIfStale } from "./price.service.js";
 import {getUserCurrencyContext,getExchangeRate,convertCurrency} from "./currency.service.js";
 
+function escapePostgrestValue(value: string) {
+  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
 async function attachDisplayPrices(assets: any[], userId: string) {
   const { displayCurrency } = await getUserCurrencyContext(userId);
 
@@ -72,7 +76,11 @@ export async function searchAssets(input: SearchAssetInput, userId: string) {
       "id, symbol, name, asset_type, market, currency, external_id, asset_prices ( price, currency, price_time )"
     )
     .eq("market", normalizedMarket)
-    .or(`symbol.ilike.%${normalizedQuery}%,name.ilike.%${normalizedQuery}%`)
+    .or(
+      `symbol.ilike.${escapePostgrestValue(
+        `%${normalizedQuery}%`
+      )},name.ilike.${escapePostgrestValue(`%${normalizedQuery}%`)}`
+    )
     .limit(10);
 
   if (localError) {

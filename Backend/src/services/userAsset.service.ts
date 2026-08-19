@@ -16,6 +16,21 @@ export async function createUserAsset(input: CreateUserAssetInput) {
   acquiredAt,
 } = input;
 
+const { data: account, error: accountError } = await supabase
+  .from("accounts")
+  .select("id")
+  .eq("id", accountId)
+  .eq("user_id", userId)
+  .maybeSingle();
+
+if (accountError) {
+  throw new Error(accountError.message);
+}
+
+if (!account) {
+  throw new Error("Account not found");
+}
+
 let normalizedCostPrice = costPrice;
 
 if (costPrice != null && costCurrency) {

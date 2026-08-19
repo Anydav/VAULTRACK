@@ -11,6 +11,7 @@ import priceRoutes from "./routes/price.routes.js";
 import dashboardRoutes from "./routes/dashbaord.routes.js";
 import snapshotRoutes from "./routes/snapshot.routes.js";
 import analysisRoutes from "./routes/analysis.routes.js";
+import profileRoutes from "./routes/profile.routes.js";
 import { startSnapshotJob } from "./jobs/snapshot.job.js";
 import { startNgxSyncJob } from "./jobs/ngxSync.job.js";
 import cookieParser from "cookie-parser";
@@ -78,6 +79,7 @@ app.use("/api/prices", priceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/snapshots", snapshotRoutes);
 app.use("/api/analysis", analysisRoutes);
+app.use("/api/profile", profileRoutes);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

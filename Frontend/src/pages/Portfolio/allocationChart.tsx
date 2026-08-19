@@ -45,7 +45,7 @@ export default function AllocationChart() {
       .sort((a, b) => b.value - a.value);
 
     const totalValue = data.reduce((sum, item) => sum + item.value, 0);
-    const currencyCode = holdings[0]?.valuation.priceCurrency ?? "";
+    const currencyCode = holdings[0]?.valuation.displayCurrency ?? "";
 
     return { chartData: data, total: totalValue, currency: currencyCode };
   }, [holdings, groupBy]);

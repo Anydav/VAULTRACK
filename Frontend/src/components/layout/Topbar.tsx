@@ -1,17 +1,21 @@
 import { useState, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Search, ChevronDown } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { getMe } from "../../services/profile.service";
+import { getMe, updatePreferredCurrency } from "../../services/profile.service";
 import { getUserAssets } from "../../services/userAssets.service";
 import { searchAssets } from "../../services/asset.service";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
+import { SUPPORTED_CURRENCIES } from "../../utils";
 
 export function Topbar() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
+  const currencyRef = useRef<HTMLDivElement>(null);
  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -29,6 +33,16 @@ export function Topbar() {
   const { data: holdings = [] } = useQuery({
     queryKey: ["user-assets"],
     queryFn: getUserAssets,
+  });
+
+  const changeCurrencyMutation = useMutation({
+    mutationFn: updatePreferredCurrency,
+    onSuccess: (updatedProfile) => {
+      queryClient.setQueryData(["me"], updatedProfile);
+      queryClient.invalidateQueries({ queryKey: ["user-assets"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+      setIsCurrencyDropdownOpen(false);
+    },
   });
 
   const { data: marketResults = [], isFetching: marketLoading, isError: marketError, refetch: refetchMarket } = useQuery({
@@ -64,10 +78,14 @@ useEffect(() => {
     if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
       setIsDropdownOpen(false);
     }
+    if (currencyRef.current && !currencyRef.current.contains(event.target as Node)) {
+      setIsCurrencyDropdownOpen(false);
+    }
   }
   function handleEscape(event: KeyboardEvent) {
     if (event.key === "Escape") {
       setIsDropdownOpen(false);
+      setIsCurrencyDropdownOpen(false);
     }
   }
   document.addEventListener("mousedown", handleClickOutside);
@@ -222,18 +240,36 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
             }`}
           />
         </button>
-        <button
-          type="button"
-          className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          <img
-            src="https://flagcdn.com/w40/ng.png"
-            alt="Nigeria flag"
-            className="h-4 w-5 rounded-sm object-cover"
-          />
-          <span>NGN</span>
-          <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
-        </button>
+        <div ref={currencyRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setIsCurrencyDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <span>{profile?.preferred_currency ?? "USD"}</span>
+            <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+          </button>
+
+          {isCurrencyDropdownOpen && (
+            <div className="absolute right-0 top-full z-20 mt-2 w-32 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+              {SUPPORTED_CURRENCIES.map((currencyCode) => (
+                <button
+                  key={currencyCode}
+                  type="button"
+                  disabled={changeCurrencyMutation.isPending}
+                  onClick={() => changeCurrencyMutation.mutate(currencyCode)}
+                  className={`flex w-full items-center px-3 py-2 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 ${
+                    profile?.preferred_currency === currencyCode
+                      ? "font-semibold text-accent-secondary"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {currencyCode}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <button
           type="button"

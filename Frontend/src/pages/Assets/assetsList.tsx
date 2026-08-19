@@ -46,7 +46,7 @@ export default function AssetsList() {
       align: "right",
       render: (holding) =>
         holding.cost_price != null && holding.quantity > 0
-          ? `${holding.valuation.priceCurrency} ${(
+          ? `${holding.valuation.displayCurrency} ${(
               holding.valuation.totalCostDisplay / holding.quantity
             ).toLocaleString()}`
           : "-",
@@ -56,25 +56,31 @@ export default function AssetsList() {
       header: "Current Price",
       align: "right",
       render: (holding) =>
-        `${holding.valuation.priceCurrency} ${holding.valuation.latestPrice.toLocaleString()}`,
+        holding.valuation.latestPriceDisplay != null
+          ? `${holding.valuation.displayCurrency} ${holding.valuation.latestPriceDisplay.toLocaleString()}`
+          : "-",
     },
     {
       key: "value",
       header: "Value",
       align: "right",
       render: (holding) =>
-        `${holding.valuation.priceCurrency} ${holding.valuation.currentValueDisplay.toLocaleString()}`,
+        `${holding.valuation.displayCurrency} ${holding.valuation.currentValueDisplay.toLocaleString()}`,
     },
     {
       key: "pnl",
       header: "P/L",
       align: "right",
       render: (holding) => {
+        if (holding.valuation.profitLossDisplay == null) {
+          return "-";
+        }
+
         const isProfit = holding.valuation.profitLossDisplay >= 0;
         return (
           <span className={isProfit ? "text-success" : "text-danger"}>
             {isProfit ? "+" : ""}
-            {holding.valuation.priceCurrency}{" "}
+            {holding.valuation.displayCurrency}{" "}
             {holding.valuation.profitLossDisplay.toLocaleString()}
           </span>
         );
