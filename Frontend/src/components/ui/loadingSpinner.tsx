@@ -16,7 +16,7 @@ export function LoadingSpinner({ message, size = "md" }: LoadingSpinnerProps) {
 
   return (
     <div className="flex min-h-[120px] w-full flex-col items-center justify-center gap-3">
-      <div className={`relative ${wrapper} text-primary`}>
+      <div className={`relative ${wrapper} text-text`}>
         {Array.from({ length: DOT_COUNT }).map((_, index) => {
           const rotation = (360 / DOT_COUNT) * index;
           const delay = (index / DOT_COUNT) * 1;

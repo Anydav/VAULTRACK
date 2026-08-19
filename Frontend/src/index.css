@@ -3,36 +3,89 @@
 @tailwind utilities;
 
 :root {
-  /* Brand colors */
-  --color-primary: #04005a;
-  --color-accent: #4594f0;
+  /* Brand colors. --color-primary is the FIXED brand navy: sidebar fill,
+     solid buttons, and text sitting on accent/danger chips. It never
+     flips between themes, so anything that reads on top of it (text-white,
+     or text-primary on a bg-accent/bg-danger chip) stays correct in both
+     modes without extra tokens. */
+  --color-primary: #04005A;
+  --color-accent: #E2A63B;
   --color-accent-secondary: #2563EB;
-  
 
-  /* Structural colors */
-  --color-background: #F8FAFC;
+  /* Structural colors. --color-text is the one that actually flips: it's
+     heading/value ink sitting directly on --color-surface. */
+  --color-background: #F2F4FB;
   --color-surface: #FFFFFF;
-  --color-text: #17352F;
-  --color-text-muted: #94A3B8;
-  --color-border: #F1F5F9;
+  --color-text: #0B0F2E;
+  --color-text-muted: #6C7089;
+  --color-border: #E5E8F3;
 
   /* Semantic feedback colors */
   --color-success: #16A34A;
-  --color-success-bg: #b6f8ce;
+  --color-success-bg: #DCFCE7;
   --color-danger: #DC2626;
   --color-danger-bg: #FEE2E2;
 
   --color-highlight-bg: #DBEAFE;
-  
+
+  /* Card depth: a real two-layer shadow instead of shadow-sm, so surfaces
+     read as raised above --color-background rather than blending into it. */
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 16px 32px -20px rgba(15, 23, 42, 0.22);
+
+  /* Tailwind's default gray scale, re-hosted on custom properties. Every
+     existing text-gray, border-gray and bg-gray class in the app already
+     uses these steps for muted text, borders and input fills — routing them
+     through variables (see tailwind.config.cjs) means dark mode can flip
+     the whole scale in one place instead of touching every component. */
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
 }
 
+.theme-dark {
+  --color-accent: #F0BB55;
+  --color-accent-secondary: #7C97FF;
 
-.theme-dark{
- --color-primary: #17352F;
- --color-accent: #C8F169;
- --color-accent-secondary: #1E9301;
- --color-highlight-bg: #FFF7D6;
+  --color-background: #0A0C18;
+  --color-surface: #12142A;
+  --color-text: #EDEFFA;
+  --color-text-muted: #8B90B3;
+  --color-border: #232640;
+
+  --color-success: #4ADE80;
+  --color-success-bg: rgba(74, 222, 128, 0.16);
+  --color-danger: #F87171;
+  --color-danger-bg: rgba(248, 113, 113, 0.16);
+
+  /* Kept light-toned on purpose: text-primary (fixed navy) sits on top of
+     this in toasts/stat tiles, so the tile itself has to stay pale for that
+     text to stay legible, exactly as it does in light mode. */
+  --color-highlight-bg: #F3E2B3;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -18px rgba(0, 0, 0, 0.55);
+
+  /* Reversed ramp: roles stay the same (50/100 = subtle fills, 700/800 =
+     strong text) but the lightness inverts so each role stays legible on a
+     dark surface. */
+  --gray-50: #171A30;
+  --gray-100: #1D2038;
+  --gray-200: #2A2D4A;
+  --gray-300: #363A5C;
+  --gray-400: #8B90B3;
+  --gray-500: #9FA4C4;
+  --gray-600: #C6CADF;
+  --gray-700: #DEE1F0;
+  --gray-800: #F1F2FA;
+  --gray-900: #FFFFFF;
 }
+
 @keyframes toast-progress {
   from {
     width: 100%;
@@ -47,5 +100,10 @@ html, body, #root {
 }
 
 body {
-  @apply bg-gray-50 text-slate-900;
+  @apply bg-background text-gray-900;
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: "Sora", ui-sans-serif, system-ui, sans-serif;
 }

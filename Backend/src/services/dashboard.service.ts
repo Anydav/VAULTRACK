@@ -5,12 +5,14 @@ import {
 } from "./price.service.js";
 
 export async function getDashboardSummary(userId: string) {
-  await syncCryptoPricesIfStale();
-
   const baseCurrency = BASE_CURRENCY;
-  const { displayCurrency } = await getUserCurrencyContext(userId);
+
+  const [, { displayCurrency }] = await Promise.all([
+    syncCryptoPricesIfStale(),
+    getUserCurrencyContext(userId),
+  ]);
   const exchangeRate = await getExchangeRate(baseCurrency, displayCurrency);
-  const holdings = await getUserAssets(userId);
+  const holdings = await getUserAssets(userId, { displayCurrency, exchangeRate });
 
   const summary = holdings.reduce(
     (totals: any, holding: any) => {

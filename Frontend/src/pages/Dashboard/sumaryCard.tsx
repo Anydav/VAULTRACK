@@ -5,6 +5,7 @@ import { getSnapshotPerformance } from "../../services/snapShot.service";
 import { LoadingSpinner } from "../../components/ui/loadingSpinner";
 import { EmptyState } from "../../components/ui/emptyState";
 import {ErrorState} from "../../components/ui/errorState";
+import { formatCurrency } from "../../utils";
 
 export default function SummaryCard() {
   const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = useQuery({
@@ -24,14 +25,14 @@ export default function SummaryCard() {
 
   if (summaryLoading || accountsLoading || performanceLoading) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
         <LoadingSpinner message="Loading summary..." />
       </div>
     );
   }
   if (summaryError || accountsError || performanceError) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
       <ErrorState
         onRetry={() => {
           refetchSummary();
@@ -45,7 +46,7 @@ export default function SummaryCard() {
 
   if (!summary) {
     return (
-       <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+       <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
         <EmptyState
           title="No data available"
           description="Check back once your portfolio data is ready."
@@ -58,12 +59,12 @@ export default function SummaryCard() {
   const isTodayProfit = todayChangePercentage >= 0;
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
         <div className="space-y-5">
           <h3 className="text-sm text-gray-400">Total Portfolio Value</h3>
-          <h2 className="mt-1 text-3xl font-bold text-primary">
-            {summary.displayCurrency} {summary.totalPortfolioValueDisplay.toLocaleString()}
+          <h2 className="mt-1 text-3xl font-bold text-text">
+            {formatCurrency(summary.totalPortfolioValueDisplay, summary.displayCurrency)}
           </h2>
           <p className="mt-2 flex items-center gap-2 text-xs text-gray-400">
             Today
@@ -83,15 +84,15 @@ export default function SummaryCard() {
         <div className="space-y-5">
           <div>
             <h4 className="text-xs text-gray-400">Total Cost</h4>
-            <p className="text-sm font-semibold text-primary">
-              {summary.displayCurrency} {summary.totalCostDisplay.toLocaleString()}
+            <p className="text-sm font-semibold text-text">
+              {formatCurrency(summary.totalCostDisplay, summary.displayCurrency)}
             </p>
           </div>
           <div>
             <h4 className="text-xs text-gray-400">Total Profit</h4>
             <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold text-primary">
-                {summary.displayCurrency} {summary.totalProfitLossDisplay.toLocaleString()}
+              <p className="text-sm font-semibold text-text">
+                {formatCurrency(summary.totalProfitLossDisplay, summary.displayCurrency)}
               </p>
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
@@ -108,16 +109,16 @@ export default function SummaryCard() {
         </div>
       </div>
 
-      <div className="mt-5 flex gap-3 border-t border-gray-100 pt-4">
+      <div className="mt-5 flex gap-3 border-t border-border pt-4">
         <div>
           <p className="text-xs text-gray-400">No of Asset</p>
-          <p className="text-lg font-bold text-primary">
+          <p className="text-lg font-bold text-text">
             {summary.numberOfHoldings}
           </p>
         </div>
         <div>
           <p className="text-xs text-gray-400">No of Account</p>
-          <p className="text-lg font-bold text-primary">
+          <p className="text-lg font-bold text-text">
             {accounts.length}
           </p>
         </div>

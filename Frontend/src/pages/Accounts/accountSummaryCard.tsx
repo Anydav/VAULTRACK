@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getAccounts } from "../../services/account.service";
 import { getUserAssets } from "../../services/userAssets.service";
 import {ErrorState} from  "../../components/ui/errorState"
+import { formatCurrency } from "../../utils";
 
 interface AccountSummaryCardProps {
   accountId: string;
@@ -52,9 +53,9 @@ export default function AccountSummaryCard({
 
   if (accountsLoading || holdingsLoading) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
         <div className="flex min-h-[100px] flex-col items-center justify-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-primary" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-text" />
           <p className="text-sm font-medium text-gray-400">
             Loading account...
           </p>
@@ -64,7 +65,7 @@ export default function AccountSummaryCard({
   }
   if (accountsError || holdingsError) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
       <ErrorState
         onRetry={() => {
           refetchAccounts();
@@ -76,7 +77,7 @@ export default function AccountSummaryCard({
 }
   if (!account) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
         <p className="text-sm text-gray-400">Account not found.</p>
       </div>
     );
@@ -85,23 +86,23 @@ export default function AccountSummaryCard({
   const isProfit = totalProfit >= 0;
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div>
           
           <p className="mt-1 text-xs text-gray-400">Holdings</p>
-          <p className="text-lg font-bold text-primary">{count}</p>
+          <p className="text-lg font-bold text-text">{count}</p>
         </div>
         <div>
           <p className="text-xs text-gray-400">Total Value</p>
-          <p className="text-lg font-bold text-primary">
-             {totalValue.toLocaleString()}
+          <p className="text-lg font-bold text-text">
+            {formatCurrency(totalValue, currency)}
           </p>
         </div>
         <div>
           <p className="text-xs text-gray-400">Total Cost</p>
-          <p className="text-lg font-bold text-primary">
-             {totalCost.toLocaleString()}
+          <p className="text-lg font-bold text-text">
+            {formatCurrency(totalCost, currency)}
           </p>
         </div>
         <div>
@@ -112,7 +113,7 @@ export default function AccountSummaryCard({
             }`}
           >
             {isProfit ? "+" : ""}
-            {totalProfit.toLocaleString()}
+            {formatCurrency(totalProfit, currency)}
           </p>
         </div>
       </div>

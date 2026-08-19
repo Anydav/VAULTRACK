@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { getUserAssets } from "../../services/userAssets.service";
 import { ErrorState } from "../../components/ui/errorState";
+import { formatCurrency } from "../../utils";
 
 type GroupBy = "asset" | "market" | "account";
 
@@ -51,9 +52,9 @@ export default function AllocationChart() {
   }, [holdings, groupBy]);
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-primary">
+        <h2 className="text-lg font-semibold text-text">
           Allocation Analysis
         </h2>
 
@@ -78,7 +79,7 @@ export default function AllocationChart() {
       <div className="mt-4">
         {isLoading ? (
           <div className="flex min-h-[220px] flex-col items-center justify-center gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-primary" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-text" />
             <p className="text-sm font-medium text-gray-400">
               Loading allocation...
             </p>
@@ -117,17 +118,15 @@ export default function AllocationChart() {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number) =>
-                      `${currency} ${value.toLocaleString()}`
-                    }
+                    formatter={(value: number) => formatCurrency(value, currency)}
                   />
                 </PieChart>
               </ResponsiveContainer>
 
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
                 <p className="text-xs text-gray-400">Total</p>
-                <p className="text-sm font-bold text-primary">
-                   {total.toLocaleString()}
+                <p className="text-sm font-bold text-text">
+                  {formatCurrency(total, currency)}
                 </p>
               </div>
             </div>
@@ -145,8 +144,8 @@ export default function AllocationChart() {
                     />
                     {item.name}
                   </span>
-                  <span className="font-medium text-primary">
-                     {item.value.toLocaleString()}
+                  <span className="font-medium text-text">
+                    {formatCurrency(item.value, currency)}
                   </span>
                 </div>
               ))}

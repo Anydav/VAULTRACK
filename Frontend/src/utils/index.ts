@@ -1,5 +1,13 @@
 export const noop = () => {}
 
+export function formatCurrency(amount: number, currency?: string) {
+  const formatted = amount.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return currency ? `${currency} ${formatted}` : formatted;
+}
+
 export const SUPPORTED_CURRENCIES = [
   "USD",
   "NGN",

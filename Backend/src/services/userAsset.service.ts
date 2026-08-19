@@ -90,12 +90,21 @@ const { data, error } = await supabase
   return data;
 }
 
-export async function getUserAssets(userId: string) {
+export async function getUserAssets(
+  userId: string,
+  currencyContext?: { displayCurrency: string; exchangeRate: number }
+) {
   const baseCurrency = BASE_CURRENCY;
-  const { displayCurrency } = await getUserCurrencyContext(userId);
-  const exchangeRate = await getExchangeRate(baseCurrency, displayCurrency);
 
-  const { data, error } = await supabase
+  const [{ displayCurrency, exchangeRate }, { data, error }] = await Promise.all([
+    currencyContext
+      ? Promise.resolve(currencyContext)
+      : (async () => {
+          const { displayCurrency } = await getUserCurrencyContext(userId);
+          const exchangeRate = await getExchangeRate(baseCurrency, displayCurrency);
+          return { displayCurrency, exchangeRate };
+        })(),
+    supabase
     .from("user_assets")
     .select(
       `
@@ -130,7 +139,8 @@ export async function getUserAssets(userId: string) {
       `
     )
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }),
+  ]);
 
   if (error) {
     throw new Error(error.message);

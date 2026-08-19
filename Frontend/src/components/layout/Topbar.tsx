@@ -6,7 +6,7 @@ import { getMe, updatePreferredCurrency } from "../../services/profile.service";
 import { getUserAssets } from "../../services/userAssets.service";
 import { searchAssets } from "../../services/asset.service";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
-import { SUPPORTED_CURRENCIES } from "../../utils";
+import { SUPPORTED_CURRENCIES, formatCurrency } from "../../utils";
 
 export function Topbar() {
   const [query, setQuery] = useState("");
@@ -117,7 +117,7 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
   }
 
   return (
-    <header className="flex h-20 items-center justify-between gap-4 rounded-2xl bg-white px-4 shadow-sm sm:px-6">
+    <header className="flex h-20 items-center justify-between gap-4 rounded-2xl border border-border bg-surface px-4 shadow-[var(--shadow-card)] sm:px-6">
       {/* Greeting + date */}
       <div className="min-w-0 shrink-0">
         <h1 className="truncate text-base font-semibold sm:text-lg">
@@ -144,7 +144,7 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
           </div>
 
           {showDropdown && (
-            <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-80 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
+            <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-80 overflow-y-auto rounded-xl border border-border bg-surface shadow-lg">
               {matchingHoldings.length > 0 && (
                 <div className="p-2">
                   <p className="px-2 py-1 text-xs font-semibold text-gray-400">
@@ -208,9 +208,12 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
                           {asset.name}
                         </span>
                       </span>
-                      <span className="text-xs font-medium text-primary">
+                      <span className="text-xs font-medium text-text">
                         {asset.asset_prices?.priceDisplay != null
-                          ? `${asset.asset_prices.displayCurrency} ${asset.asset_prices.priceDisplay.toLocaleString()}`
+                          ? formatCurrency(
+                              asset.asset_prices.priceDisplay,
+                              asset.asset_prices.displayCurrency
+                            )
                           : "—"}
                       </span>
                     </button>
@@ -251,7 +254,7 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
           </button>
 
           {isCurrencyDropdownOpen && (
-            <div className="absolute right-0 top-full z-20 mt-2 w-32 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+            <div className="absolute right-0 top-full z-20 mt-2 w-32 overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
               {SUPPORTED_CURRENCIES.map((currencyCode) => (
                 <button
                   key={currencyCode}

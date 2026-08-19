@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { searchAssets } from "../../services/asset.service";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
 import { Asset } from "../../types/asset";
+import { formatCurrency } from "../../utils";
 
 export default function SelectAssetStep() {
   const [query, setQuery] = useState("");
@@ -62,14 +63,17 @@ export default function SelectAssetStep() {
               className="flex w-full items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-left text-sm hover:border-primary hover:bg-gray-50"
             >
               <span className="flex flex-col items-start">
-                <span className="font-medium text-primary">
+                <span className="font-medium text-text">
                   {asset.symbol}
                 </span>
                 <span className="text-xs text-gray-400">{asset.name}</span>
               </span>
-              <span className="text-xs font-medium text-primary">
+              <span className="text-xs font-medium text-text">
                 {asset.asset_prices?.priceDisplay != null
-                  ? `${asset.asset_prices.displayCurrency} ${asset.asset_prices.priceDisplay.toLocaleString()}`
+                  ? formatCurrency(
+                      asset.asset_prices.priceDisplay,
+                      asset.asset_prices.displayCurrency
+                    )
                   : "—"}
               </span>
             </button>

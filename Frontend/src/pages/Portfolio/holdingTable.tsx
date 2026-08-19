@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { getUserAssets } from "../../services/userAssets.service";
 import { Table, type TableColumn } from "../../components/tables/table";
 import type { Holding } from "../../types/userAssets";
+import { formatCurrency } from "../../utils";
 
 export default function HoldingTable() {
   const [query, setQuery] = useState("");
@@ -30,7 +31,7 @@ export default function HoldingTable() {
       key: "asset",
       header: "Asset",
       render: (holding) => (
-        <span className="font-medium text-primary">
+        <span className="font-medium text-text">
           {holding.assets?.symbol ?? "-"}
         </span>
       ),
@@ -46,9 +47,10 @@ export default function HoldingTable() {
       align: "right",
       render: (holding) =>
         holding.cost_price != null && holding.quantity > 0
-          ? `${holding.valuation.displayCurrency} ${(
-              holding.valuation.totalCostDisplay / holding.quantity
-            ).toLocaleString()}`
+          ? formatCurrency(
+              holding.valuation.totalCostDisplay / holding.quantity,
+              holding.valuation.displayCurrency
+            )
           : "-",
     },
     {
@@ -57,7 +59,10 @@ export default function HoldingTable() {
   align: "right",
   render: (holding) =>
     holding.valuation.latestPriceDisplay != null
-      ? `${holding.valuation.displayCurrency} ${holding.valuation.latestPriceDisplay.toLocaleString()}`
+      ? formatCurrency(
+          holding.valuation.latestPriceDisplay,
+          holding.valuation.displayCurrency
+        )
       : "-",
 },
     {
@@ -65,7 +70,10 @@ export default function HoldingTable() {
       header: "Value",
       align: "right",
       render: (holding) =>
-        `${holding.valuation.displayCurrency} ${holding.valuation.currentValueDisplay.toLocaleString()}`,
+        formatCurrency(
+          holding.valuation.currentValueDisplay,
+          holding.valuation.displayCurrency
+        ),
     },
     {
   key: "pnl",
@@ -80,8 +88,10 @@ export default function HoldingTable() {
     return (
       <span className={isProfit ? "text-success" : "text-danger"}>
         {isProfit ? "+" : ""}
-        {holding.valuation.displayCurrency}{" "}
-        {holding.valuation.profitLossDisplay.toLocaleString()}
+        {formatCurrency(
+          holding.valuation.profitLossDisplay,
+          holding.valuation.displayCurrency
+        )}
       </span>
     );
   },
@@ -114,9 +124,9 @@ export default function HoldingTable() {
   ];
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold text-primary">
+        <h2 className="text-lg font-semibold text-text">
           Holding Table
         </h2>
 

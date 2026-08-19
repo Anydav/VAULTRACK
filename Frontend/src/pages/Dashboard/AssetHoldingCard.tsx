@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getUserAssets } from "../../services/userAssets.service";
 import { ErrorState } from "../../components/ui/errorState";
+import { formatCurrency } from "../../utils";
 
 export default function AssetHoldingCard() {
   const { data: holdings = [], isLoading, isError, refetch } = useQuery({
@@ -9,8 +10,8 @@ export default function AssetHoldingCard() {
   });
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-primary">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <h2 className="mb-4 text-lg font-semibold text-text">
         Asset Holding
       </h2>
 
@@ -24,10 +25,10 @@ export default function AssetHoldingCard() {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="text-gray-400">
-              <th className="pb-2 font-medium">Asset</th>
-              <th className="pb-2 font-medium">QTY</th>
-              <th className="pb-2 font-medium">Current Value</th>
-              <th className="pb-2 font-medium">P/L%</th>
+              <th className="pb-2 pr-3 font-medium">Asset</th>
+              <th className="px-3 pb-2 font-medium">QTY</th>
+              <th className="px-3 pb-2 font-medium">Current Value</th>
+              <th className="pb-2 pl-3 font-medium">P/L%</th>
             </tr>
           </thead>
           <tbody>
@@ -35,16 +36,19 @@ export default function AssetHoldingCard() {
               const isProfit = holding.valuation.profitLossDisplay >= 0;
 
               return (
-                <tr key={holding.id} className="border-t border-gray-50 transition-colors hover:bg-gray-50">
-                  <td className="py-2 font-medium  text-primary">
+                <tr key={holding.id} className="border-t border-border transition-colors hover:bg-background/60">
+                  <td className="py-2 pr-3 font-medium text-text">
                     {holding.assets?.symbol}
                   </td>
-                  <td className="py-2 text-gray-600">{holding.quantity}</td>
-                  <td className="py-2 text-gray-600">
-                    {holding.valuation.currentValueDisplay.toLocaleString()}
+                  <td className="px-3 py-2 text-gray-600">{holding.quantity}</td>
+                  <td className="px-3 py-2 text-gray-600">
+                    {formatCurrency(
+                      holding.valuation.currentValueDisplay,
+                      holding.valuation.displayCurrency
+                    )}
                   </td>
                   <td
-                    className={`py-2 font-medium ${
+                    className={`py-2 pl-3 font-medium ${
                       isProfit ? "text-success" : "text-danger"
                     }`}
                   >
