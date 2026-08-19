@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY"),
-    http_options=types.HttpOptions(timeout=30000)  # 15 seconds, in milliseconds
+    http_options=types.HttpOptions(timeout=120000)  # 120 seconds, in milliseconds
 )
 
 SYSTEM_PROMPT = """You are a financial assistant for VaulTrack, a personal portfolio tracking app.
