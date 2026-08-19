@@ -10,6 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { getPortfolioSnapshots } from "../../services/snapShot.service";
+import {ErrorState} from "../../components/ui/errorState";
 
 type RangeOption = "1W" | "1M" | "3M" | "1Y" | "All";
 
@@ -25,10 +26,11 @@ const RANGE_DAYS: Record<Exclude<RangeOption, "All">, number> = {
 export default function AnalysisChart() {
   const [range, setRange] = useState<RangeOption>("1M");
 
-  const { data: snapshots = [], isLoading } = useQuery({
+  const { data: snapshots = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["portfolio-snapshots"],
     queryFn: getPortfolioSnapshots,
   });
+  
 
   const filteredData = useMemo(() => {
     const sorted = [...snapshots].sort(
@@ -55,6 +57,18 @@ export default function AnalysisChart() {
       currency: snapshot.display_currency,
     }));
   }, [snapshots, range]);
+  const chartData = useMemo(() => {
+  if (filteredData.length === 0) {
+    return [
+      { date: "", value: 0 },
+      { date: "", value: 0 },
+    ];
+  }
+  if (filteredData.length === 1) {
+    return [filteredData[0], filteredData[0]];
+  }
+  return filteredData;
+}, [filteredData]);
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
@@ -79,17 +93,16 @@ export default function AnalysisChart() {
         </div>
       </div>
 
-      <div className="mt-4 h-72">
+      <div className="relative mt-4 h-72">
         {isLoading ? (
-          <p className="text-sm text-gray-400">Loading chart...</p>
-        ) : filteredData.length === 0 ? (
-          <p className="text-sm text-gray-400">
-            Not enough snapshot data yet.
-          </p>
-        ) : (
+  <p className="text-sm text-gray-400">Loading chart...</p>
+) : isError ? (
+  <ErrorState onRetry={() => refetch()} />
+) : (
+  <>
           
             <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={filteredData}>
+            <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.25} />
@@ -104,6 +117,7 @@ export default function AnalysisChart() {
                 tickLine={false}
               />
               <YAxis
+              domain={[0, "dataMax"]}
                 tick={{ fontSize: 12, fill: "#94A3B8" }}
                 axisLine={false}
                 tickLine={false}
@@ -127,6 +141,12 @@ export default function AnalysisChart() {
               />
             </AreaChart>
           </ResponsiveContainer>
+           {filteredData.length === 0 && (
+      <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+        <p className="text-sm text-gray-400">Not enough snapshot data yet.</p>
+      </div>
+    )}
+  </>
          
         )}
       </div>

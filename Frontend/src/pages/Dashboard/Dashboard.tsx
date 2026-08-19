@@ -9,10 +9,10 @@ export default function Dashboard() {
   return  (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-[#17352F]">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-primary">Dashboard</h1>
         <button
           type="button"
-          className="rounded-xl bg-[#17352F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f241f]"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f241f]"
           onClick={() => openAddAssetModal()}
         >
           + Add Asset

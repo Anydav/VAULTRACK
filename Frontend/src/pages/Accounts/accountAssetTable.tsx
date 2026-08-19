@@ -11,10 +11,10 @@ interface AccountAssetsTableProps {
 export default function AccountAssetsTable({
   accountId,
 }: AccountAssetsTableProps) {
-  const { data: holdings = [], isLoading } = useQuery({
-    queryKey: ["user-assets"],
-    queryFn: getUserAssets,
-  });
+  const { data: holdings = [], isLoading, isError, refetch } = useQuery({
+  queryKey: ["user-assets"],
+  queryFn: getUserAssets,
+});
 
   const accountHoldings = useMemo(
     () => holdings.filter((holding) => holding.accounts?.id === accountId),
@@ -83,12 +83,14 @@ export default function AccountAssetsTable({
       <h2 className="mb-4 text-lg font-semibold text-primary">Assets</h2>
 
       <Table
-        columns={columns}
-        data={accountHoldings}
-        getRowKey={(holding) => holding.id}
-        isLoading={isLoading}
-        emptyMessage="No assets in this account yet"
-      />
+  columns={columns}
+  data={accountHoldings}
+  getRowKey={(holding) => holding.id}
+  isLoading={isLoading}
+  isError={isError}
+  onRetry={() => refetch()}
+  emptyMessage="No assets in this account yet"
+/>
     </div>
   );
 }

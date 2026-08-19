@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, Search, ChevronDown } from "lucide-react";
 import { NavLink } from "react-router-dom";
@@ -10,6 +10,8 @@ import { useAddAssetModal } from "../../context/addAssetModelcontext";
 export function Topbar() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const searchRef = useRef<HTMLDivElement>(null);
+ const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -29,15 +31,17 @@ export function Topbar() {
     queryFn: getUserAssets,
   });
 
-  const { data: marketResults = [], isFetching: marketLoading } = useQuery({
+  const { data: marketResults = [], isFetching: marketLoading, isError: marketError, refetch: refetchMarket } = useQuery({
   queryKey: ["asset-search", debouncedQuery],
   queryFn: async () => {
-    const [crypto, ngx] = await Promise.all([
-      searchAssets(debouncedQuery, "CRYPTO"),
-      searchAssets(debouncedQuery, "NGX"),
-    ]);
-    return [...crypto, ...ngx];
-  },
+  const results = await Promise.allSettled([
+    searchAssets(debouncedQuery, "CRYPTO"),
+    searchAssets(debouncedQuery, "NGX"),
+  ]);
+  return results
+    .filter((r) => r.status === "fulfilled")
+    .flatMap((r) => r.value);
+},
   enabled: debouncedQuery.length > 0,
 });
 
@@ -48,7 +52,33 @@ export function Topbar() {
     holding.assets?.name?.toLowerCase().includes(debouncedQuery.toLowerCase())
   );
 
-  const showDropdown = debouncedQuery.length > 0;
+  
+   useEffect(() => {
+  if (debouncedQuery.length > 0) {
+    setIsDropdownOpen(true);
+  }
+}, [debouncedQuery]);
+
+useEffect(() => {
+  function handleClickOutside(event: MouseEvent) {
+    if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      setIsDropdownOpen(false);
+    }
+  }
+  function handleEscape(event: KeyboardEvent) {
+    if (event.key === "Escape") {
+      setIsDropdownOpen(false);
+    }
+  }
+  document.addEventListener("mousedown", handleClickOutside);
+  document.addEventListener("keydown", handleEscape);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+    document.removeEventListener("keydown", handleEscape);
+  };
+}, []);
+
+const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -58,6 +88,7 @@ export function Topbar() {
   });
   const { openAddAssetModal } = useAddAssetModal();
   const [isDarkMode, setIsDarkMode] = useState(false);
+ 
 
   function toggleTheme() {
     setIsDarkMode((prev) => {
@@ -81,8 +112,8 @@ export function Topbar() {
       </div>
 
       {/* Search bar */}
-      <div className="relative hidden flex-1 justify-center md:flex">
-        <div className="w-full max-w-md">
+      <div className=" hidden flex-1 justify-center md:flex">
+        <div ref={searchRef} className="relative w-full max-w-md">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
@@ -105,7 +136,10 @@ export function Topbar() {
                     <NavLink
                       key={holding.id}
                       to={`/assets/${holding.id}`}
-                      onClick={() => setQuery("")}
+                      onClick={() => {
+  setQuery("");
+  setIsDropdownOpen(false);
+}}
                       className="flex items-center justify-between rounded-lg px-2 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
                       <span>{holding.assets?.symbol}</span>
@@ -122,10 +156,19 @@ export function Topbar() {
                   Market Results
                 </p>
                 {marketLoading ? (
-                  <p className="px-2 py-2 text-sm text-gray-400">
-                    Searching...
-                  </p>
-                ) : marketResults.length === 0 ? (
+  <p className="px-2 py-2 text-sm text-gray-400">Searching...</p>
+) : marketError ? (
+  <p className="flex items-center justify-between px-2 py-2 text-sm text-danger">
+    Search failed.
+    <button
+      type="button"
+      onClick={() => refetchMarket()}
+      className="font-semibold underline"
+    >
+      Try again
+    </button>
+  </p>
+) : marketResults.length === 0 ? (
                   <p className="px-2 py-2 text-sm text-gray-400">
                     No results found
                   </p>
@@ -135,9 +178,10 @@ export function Topbar() {
                       key={asset.id}
                       type="button"
                       onClick={() => {
-                        openAddAssetModal({ asset });
-                        setQuery("");
-                      }}
+  openAddAssetModal({ asset });
+  setQuery("");
+  setIsDropdownOpen(false);
+}}
                       className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
                       <span className="flex flex-col items-start">

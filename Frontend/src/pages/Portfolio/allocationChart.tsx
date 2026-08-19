@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { getUserAssets } from "../../services/userAssets.service";
+import { ErrorState } from "../../components/ui/errorState";
 
 type GroupBy = "asset" | "market" | "account";
 
@@ -16,7 +17,7 @@ const COLORS = [ "var(--color-primary)","var(--color-accent)", "#F5B841", "#7C9E
 export default function AllocationChart() {
   const [groupBy, setGroupBy] = useState<GroupBy>("asset");
 
-  const { data: holdings = [], isLoading } = useQuery({
+  const { data: holdings = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["user-assets"],
     queryFn: getUserAssets,
   });
@@ -82,6 +83,13 @@ export default function AllocationChart() {
               Loading allocation...
             </p>
           </div>
+        ) : isError ? (
+          
+            <ErrorState
+              onRetry={() => {
+                refetch();
+              }}
+            />
         ) : chartData.length === 0 ? (
           <div className="flex min-h-[220px] flex-col items-center justify-center gap-2">
             <p className="text-base font-semibold text-gray-500">

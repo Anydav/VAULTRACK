@@ -1,5 +1,5 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, LogOut } from "lucide-react";
 import { getAccounts } from "../../services/account.service";
@@ -13,6 +13,8 @@ import AccountsIcon from "../../assets/stats.png";
 import AssetsIcon from "../../assets/Search.png";
 import HistoryIcon from "../../assets/Chart.png";
 import SettingsIcon from "../../assets/Setting.png";
+
+
 
 const topNavItems = [
   { label: "Dashboard", path: "/dashboard", icon: DashboardIcon },
@@ -34,6 +36,13 @@ export function Sidebar() {
     queryFn: getAccounts,
   });
   const [isAssetsOpen, setIsAssetsOpen] = useState(false);
+  const location = useLocation();
+  const isOnAssetsRoute = location.pathname.startsWith("/assets");
+ useEffect(() => {
+  if (location.pathname.startsWith("/assets")) {
+    setIsAssetsOpen(true);
+  }
+}, [location.pathname]);
 
   const { data: holdings = [], isLoading: assetsLoading } = useQuery({
     queryKey: ["user-assets"],
@@ -127,17 +136,23 @@ export function Sidebar() {
           </li>
 <li>
   <div className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10">
-    <NavLink
-      to="/assets"
-      className={({ isActive }) =>
-        `flex flex-1 items-center gap-3 ${
-          isActive ? "text-accent" : "text-white"
-        }`
-      }
-    >
-      <img src={AssetsIcon} alt="" className="h-5 w-5 object-contain" />
-      <span>Assets</span>
-    </NavLink>
+    <button
+  type="button"
+  onClick={() => {
+    if (location.pathname.startsWith("/assets")) {
+      setIsAssetsOpen((prev) => !prev);
+    } else {
+      navigate("/assets");
+      setIsAssetsOpen(true);
+    }
+  }}
+  className={`flex flex-1 items-center gap-3 ${
+    location.pathname.startsWith("/assets") ? "text-accent" : "text-white"
+  }`}
+>
+  <img src={AssetsIcon} alt="" className="h-5 w-5 object-contain" />
+  <span>Assets</span>
+</button>
 
     <button
       type="button"
@@ -145,10 +160,10 @@ export function Sidebar() {
       aria-label="Toggle assets"
     >
       <ChevronDown
-        className={`h-4 w-4 transition ${
-          isAssetsOpen ? "rotate-180" : ""
-        }`}
-      />
+  className={`h-4 w-4 transition ${
+    isAssetsOpen ? "rotate-180" : ""
+  }`}
+/>
     </button>
   </div>
 

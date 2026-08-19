@@ -10,6 +10,8 @@ import Analysis from './pages/Analysis/portfolioAi'
 import { AddAssetModalProvider } from "./context/addAssetModelcontext";
 import AddAssetModal from "./components/addAsset/addAssetModel";
 import { ToastProvider } from "./context/toastContext";
+import AssetsList from './pages/Assets/assetsList'
+import AssetDetail from "./pages/Assets/assetDetail";
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-8">{title} - Placeholder</div>
@@ -27,7 +29,8 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="portfolio" element={<Portfolio />} />
           <Route path="accounts/:accountId" element={<AccountDetail />} />
-          <Route path="assets" element={<Placeholder title="Assets" />} />
+          <Route path="assets" element={<AssetsList />} />
+          <Route path="assets/:assetId" element={<AssetDetail />} />
           <Route path="history" element={<History />} />
           <Route path="Analysis" element={<Analysis />} />
         </Route>

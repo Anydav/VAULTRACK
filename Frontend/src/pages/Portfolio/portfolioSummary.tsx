@@ -3,14 +3,15 @@ import { getDashboardSummary } from "../../services/dashboard.service";
 import { getAccounts } from "../../services/account.service";
 import { LoadingSpinner } from "../../components/ui/loadingSpinner";
 import { EmptyState } from "../../components/ui/emptyState";
+import { ErrorState } from "../../components/ui/errorState";
 
 export default function PortfolioSummary() {
-  const { data: summary, isLoading: summaryLoading } = useQuery({
+  const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = useQuery({
     queryKey: ["dashboard-summary"],
     queryFn: getDashboardSummary,
   });
 
-  const { data: accounts = [], isLoading: accountsLoading } = useQuery({
+  const { data: accounts = [], isLoading: accountsLoading, isError: accountsError, refetch: refetchAccounts } = useQuery({
     queryKey: ["accounts"],
     queryFn: getAccounts,
   });
@@ -22,6 +23,18 @@ export default function PortfolioSummary() {
       </div>
     );
   }
+  if (summaryError || accountsError) {
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <ErrorState
+        onRetry={() => {
+          refetchSummary();
+          refetchAccounts();
+        }}
+      />
+    </div>
+  );
+}
 
   if (!summary) {
     return (
@@ -39,11 +52,11 @@ export default function PortfolioSummary() {
   const stats = [
     {
       label: "Total Value",
-      value: ` ${summary.totalPortfolioValueDisplay.toLocaleString()}`,
+      value: ` ${summary.displayCurrency} ${summary.totalPortfolioValueDisplay.toLocaleString()}`,
     },
     {
       label: "Total Cost",
-      value: ` ${summary.totalCostDisplay.toLocaleString()}`,
+      value: `${summary.displayCurrency} ${summary.totalCostDisplay.toLocaleString()}`,
     },
     {
       label: "Accounts",
@@ -51,8 +64,8 @@ export default function PortfolioSummary() {
     },
     {
       label: "Total Profit",
-      value: `${isProfit ? "+" : ""} ${summary.totalProfitLossDisplay.toLocaleString()}`,
-      highlight: isProfit,
+      value: `${summary.displayCurrency} ${isProfit ? "+" : ""} ${summary.totalProfitLossDisplay.toLocaleString()}`,
+      variant: isProfit ? "success" : "danger",
     },
   ];
 
@@ -61,18 +74,21 @@ export default function PortfolioSummary() {
       <h2 className="mb-4 text-lg font-semibold text-primary">
         Portfolio  Summary
       </h2>
-
       <div className="grid grid-cols-2 gap-3">
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="rounded-xl bg-highlight-bg p-4"
+            className="rounded-xl bg-highlight-bg p-3"
           >
             <p className="text-xs text-gray-500">{stat.label}</p>
             <p
-              className={`mt-1 text-lg font-bold ${
-                stat.highlight ? "text-success" : "text-primary"
-              }`}
+             className={`mt-1 text-lg font-bold ${
+               stat.variant === "success"
+                 ? "text-success"
+                 : stat.variant === "danger"
+                 ? "text-danger"
+                 : "text-primary"
+             }`}
             >
               {stat.value}
             </p>
