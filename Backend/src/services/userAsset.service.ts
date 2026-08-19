@@ -142,7 +142,7 @@ export async function getUserAssets(userId: string) {
         exchangeRate,
 
         latestPrice,
-
+        latestPriceDisplay: convertCurrency(latestPrice, exchangeRate),
         currentValueBase,
         totalCostBase,
         profitLossBase,
@@ -156,6 +156,9 @@ export async function getUserAssets(userId: string) {
         priceCurrency:
           holding.assets?.asset_prices?.currency || holding.assets?.currency,
         priceLastUpdated: holding.assets?.asset_prices?.price_time || null,
+        // displayCurrency already exists above — this is just a reminder
+        // that every *Display-suffixed field is in displayCurrency, not
+        // priceCurrency. Frontend should label those fields accordingly.
       },
     };
   });
