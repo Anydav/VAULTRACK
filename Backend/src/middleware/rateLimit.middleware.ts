@@ -2,7 +2,7 @@ import { rateLimit } from "express-rate-limit";
 import { Request, Response } from "express";
 
 export const analysisRateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute window
+  windowMs: 3 * 60 * 1000, // 3 minute window
   limit: 5, // 5 AI requests per user per minute
   standardHeaders: "draft-8",
   legacyHeaders: false,
