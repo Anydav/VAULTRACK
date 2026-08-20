@@ -47,7 +47,7 @@ User's question: {user_question}"""
 
     try:
         response = client.models.generate_content(
-            model="gemini-3.5-flash",
+            model="gemini-2.5-flash-lite",
             contents=prompt
         )
 
@@ -76,7 +76,7 @@ Write an updated, concise summary that incorporates this message into the existi
 
     try:
         response = client.models.generate_content(
-            model="gemini-3.5-flash",
+            model="gemini-2.5-flash-lite",
             contents=fold_prompt
         )
     except Exception as e:
