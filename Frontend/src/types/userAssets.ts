@@ -22,11 +22,13 @@ export interface Holding {
   } | null;
   valuation: {
     latestPrice: number;
+    latestPriceDisplay: number;
     currentValueDisplay: number;
     totalCostDisplay: number;
     profitLossDisplay: number;
     profitLossPercentage: number;
     priceCurrency: string;
+    displayCurrency: string;
     priceLastUpdated: string | null;
   };
 }

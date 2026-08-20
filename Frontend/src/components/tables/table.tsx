@@ -30,7 +30,7 @@ export function Table<T>({
   if (isLoading) {
     return (
       <div className="flex min-h-[200px] flex-col items-center justify-center gap-3">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-primary" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-text" />
         <p className="text-sm font-medium text-gray-400">Loading...</p>
       </div>
     );
@@ -62,7 +62,7 @@ export function Table<T>({
             {columns.map((column) => (
               <th
                 key={column.key}
-                className={`whitespace-nowrap pb-3 font-medium ${
+                className={`whitespace-nowrap px-3 pb-3 font-medium first:pl-0 last:pr-0 ${
                   column.align === "right"
                     ? "text-right"
                     : column.align === "center"
@@ -79,12 +79,12 @@ export function Table<T>({
           {data.map((row) => (
             <tr
               key={getRowKey(row)}
-              className="border-t border-gray-50 hover:bg-gray-50/50"
+              className="border-t border-border hover:bg-background/60"
             >
               {columns.map((column) => (
                 <td
                   key={column.key}
-                  className={`whitespace-nowrap py-3 ${
+                  className={`whitespace-nowrap px-3 py-3 first:pl-0 last:pr-0 ${
                     column.align === "right"
                       ? "text-right"
                       : column.align === "center"

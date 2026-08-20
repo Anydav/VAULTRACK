@@ -2,6 +2,18 @@ import { supabase } from "../config/supabase.js";
 import axios from "axios";
 
 export const BASE_CURRENCY = "USD";
+export const SUPPORTED_CURRENCIES = [
+  "USD",
+  "NGN",
+  "EUR",
+  "GBP",
+  "GHS",
+  "KES",
+  "ZAR",
+  "CAD",
+  "AUD",
+  "JPY",
+];
 const EXCHANGE_API_BASE_URL =
   "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies";
 

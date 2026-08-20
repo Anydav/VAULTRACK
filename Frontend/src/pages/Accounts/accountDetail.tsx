@@ -24,7 +24,7 @@ if (!accountId) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-primary">{account?.name ?? "Account"}</h1>
+        <h1 className="text-2xl font-bold text-text">{account?.name ?? "Account"}</h1>
         <button
           type="button"
           className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f241f]"

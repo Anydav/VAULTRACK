@@ -4,6 +4,7 @@ import { getAccounts } from "../../services/account.service";
 import { LoadingSpinner } from "../../components/ui/loadingSpinner";
 import { EmptyState } from "../../components/ui/emptyState";
 import { ErrorState } from "../../components/ui/errorState";
+import { formatCurrency } from "../../utils";
 
 export default function PortfolioSummary() {
   const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = useQuery({
@@ -18,14 +19,14 @@ export default function PortfolioSummary() {
 
   if (summaryLoading || accountsLoading) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
         <LoadingSpinner message="Loading summary..." />
       </div>
     );
   }
   if (summaryError || accountsError) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
       <ErrorState
         onRetry={() => {
           refetchSummary();
@@ -38,7 +39,7 @@ export default function PortfolioSummary() {
 
   if (!summary) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
         <EmptyState
           title="No data available"
           description="Check back once your portfolio data is ready."
@@ -52,11 +53,11 @@ export default function PortfolioSummary() {
   const stats = [
     {
       label: "Total Value",
-      value: ` ${summary.displayCurrency} ${summary.totalPortfolioValueDisplay.toLocaleString()}`,
+      value: formatCurrency(summary.totalPortfolioValueDisplay, summary.displayCurrency),
     },
     {
       label: "Total Cost",
-      value: `${summary.displayCurrency} ${summary.totalCostDisplay.toLocaleString()}`,
+      value: formatCurrency(summary.totalCostDisplay, summary.displayCurrency),
     },
     {
       label: "Accounts",
@@ -64,14 +65,14 @@ export default function PortfolioSummary() {
     },
     {
       label: "Total Profit",
-      value: `${summary.displayCurrency} ${isProfit ? "+" : ""} ${summary.totalProfitLossDisplay.toLocaleString()}`,
+      value: `${isProfit ? "+" : ""}${formatCurrency(summary.totalProfitLossDisplay, summary.displayCurrency)}`,
       variant: isProfit ? "success" : "danger",
     },
   ];
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-primary">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <h2 className="mb-4 text-lg font-semibold text-text">
         Portfolio  Summary
       </h2>
       <div className="grid grid-cols-2 gap-3">

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserAssets } from "../../services/userAssets.service";
 import { Table, type TableColumn } from "../../components/tables/table";
 import type { Holding } from "../../types/userAssets";
+import { formatCurrency } from "../../utils";
 
 interface AccountAssetsTableProps {
   accountId: string;
@@ -26,7 +27,7 @@ export default function AccountAssetsTable({
       key: "asset",
       header: "Asset",
       render: (holding) => (
-        <span className="font-medium text-primary">
+        <span className="font-medium text-text">
           {holding.assets?.symbol ?? "-"}
         </span>
       ),
@@ -40,7 +41,11 @@ export default function AccountAssetsTable({
       key: "value",
       header: "Value",
       align: "right",
-      render: (holding) => holding.valuation.currentValueDisplay.toLocaleString(),
+      render: (holding) =>
+        formatCurrency(
+          holding.valuation.currentValueDisplay,
+          holding.valuation.displayCurrency
+        ),
     },
     {
       key: "pnl",
@@ -51,7 +56,10 @@ export default function AccountAssetsTable({
         return (
           <span className={isProfit ? "text-success" : "text-danger"}>
             {isProfit ? "+" : ""}
-            {holding.valuation.profitLossDisplay.toLocaleString()}
+            {formatCurrency(
+              holding.valuation.profitLossDisplay,
+              holding.valuation.displayCurrency
+            )}
           </span>
         );
       },
@@ -79,8 +87,8 @@ export default function AccountAssetsTable({
   ];
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-primary">Assets</h2>
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <h2 className="mb-4 text-lg font-semibold text-text">Assets</h2>
 
       <Table
   columns={columns}

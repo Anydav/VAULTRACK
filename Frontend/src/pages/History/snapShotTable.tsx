@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getPortfolioSnapshots } from "../../services/snapShot.service";
 import { Table, type TableColumn } from "../../components/tables/table";
 import type { PortfolioSnapshot } from "../../types/snapShot";
+import { formatCurrency } from "../../utils";
 
 interface SnapshotRow extends PortfolioSnapshot {
   dailyChangeDisplay: number;
@@ -57,7 +58,7 @@ export default function SnapshotTable() {
       header: "Portfolio Value",
       align: "right",
       render: (row) =>
-        `${row.display_currency} ${row.total_portfolio_value_display.toLocaleString()}`,
+        formatCurrency(row.total_portfolio_value_display, row.display_currency),
     },
     {
       key: "change",
@@ -82,8 +83,8 @@ export default function SnapshotTable() {
   ];
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-primary">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <h2 className="mb-4 text-lg font-semibold text-text">
         Snapshot Table
       </h2>
 

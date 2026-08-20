@@ -77,7 +77,7 @@ export default function CreateAccountStep() {
       <button
         type="submit"
         disabled={mutation.isPending}
-        className="w-full rounded-xl bg-[#17352F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0f241f] disabled:opacity-60"
+        className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
       >
         {mutation.isPending ? "Creating..." : "Create Account"}
       </button>

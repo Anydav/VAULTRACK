@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { getUserAssets } from "../../services/userAssets.service";
 import { Table, type TableColumn } from "../../components/tables/table";
 import type { Holding } from "../../types/userAssets";
+import { formatCurrency } from "../../utils";
 
 export default function AssetsList() {
   const [query, setQuery] = useState("");
@@ -30,7 +31,7 @@ export default function AssetsList() {
       key: "asset",
       header: "Asset",
       render: (holding) => (
-        <span className="font-medium text-primary">
+        <span className="font-medium text-text">
           {holding.assets?.symbol ?? "-"}
         </span>
       ),
@@ -46,9 +47,10 @@ export default function AssetsList() {
       align: "right",
       render: (holding) =>
         holding.cost_price != null && holding.quantity > 0
-          ? `${holding.valuation.priceCurrency} ${(
-              holding.valuation.totalCostDisplay / holding.quantity
-            ).toLocaleString()}`
+          ? formatCurrency(
+              holding.valuation.totalCostDisplay / holding.quantity,
+              holding.valuation.displayCurrency
+            )
           : "-",
     },
     {
@@ -56,26 +58,40 @@ export default function AssetsList() {
       header: "Current Price",
       align: "right",
       render: (holding) =>
-        `${holding.valuation.priceCurrency} ${holding.valuation.latestPrice.toLocaleString()}`,
+        holding.valuation.latestPriceDisplay != null
+          ? formatCurrency(
+              holding.valuation.latestPriceDisplay,
+              holding.valuation.displayCurrency
+            )
+          : "-",
     },
     {
       key: "value",
       header: "Value",
       align: "right",
       render: (holding) =>
-        `${holding.valuation.priceCurrency} ${holding.valuation.currentValueDisplay.toLocaleString()}`,
+        formatCurrency(
+          holding.valuation.currentValueDisplay,
+          holding.valuation.displayCurrency
+        ),
     },
     {
       key: "pnl",
       header: "P/L",
       align: "right",
       render: (holding) => {
+        if (holding.valuation.profitLossDisplay == null) {
+          return "-";
+        }
+
         const isProfit = holding.valuation.profitLossDisplay >= 0;
         return (
           <span className={isProfit ? "text-success" : "text-danger"}>
             {isProfit ? "+" : ""}
-            {holding.valuation.priceCurrency}{" "}
-            {holding.valuation.profitLossDisplay.toLocaleString()}
+            {formatCurrency(
+              holding.valuation.profitLossDisplay,
+              holding.valuation.displayCurrency
+            )}
           </span>
         );
       },
@@ -110,7 +126,7 @@ export default function AssetsList() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-primary">Assets</h1>
+        <h1 className="text-2xl font-bold text-text">Assets</h1>
 
         <div className="relative w-full sm:w-64">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -124,7 +140,7 @@ export default function AssetsList() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
         <Table
           columns={columns}
           data={filteredHoldings}

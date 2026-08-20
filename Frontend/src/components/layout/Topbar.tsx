@@ -1,17 +1,21 @@
 import { useState, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Search, ChevronDown } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { getMe } from "../../services/profile.service";
+import { getMe, updatePreferredCurrency } from "../../services/profile.service";
 import { getUserAssets } from "../../services/userAssets.service";
 import { searchAssets } from "../../services/asset.service";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
+import { SUPPORTED_CURRENCIES, formatCurrency } from "../../utils";
 
 export function Topbar() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
+  const currencyRef = useRef<HTMLDivElement>(null);
  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -29,6 +33,16 @@ export function Topbar() {
   const { data: holdings = [] } = useQuery({
     queryKey: ["user-assets"],
     queryFn: getUserAssets,
+  });
+
+  const changeCurrencyMutation = useMutation({
+    mutationFn: updatePreferredCurrency,
+    onSuccess: (updatedProfile) => {
+      queryClient.setQueryData(["me"], updatedProfile);
+      queryClient.invalidateQueries({ queryKey: ["user-assets"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+      setIsCurrencyDropdownOpen(false);
+    },
   });
 
   const { data: marketResults = [], isFetching: marketLoading, isError: marketError, refetch: refetchMarket } = useQuery({
@@ -64,10 +78,14 @@ useEffect(() => {
     if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
       setIsDropdownOpen(false);
     }
+    if (currencyRef.current && !currencyRef.current.contains(event.target as Node)) {
+      setIsCurrencyDropdownOpen(false);
+    }
   }
   function handleEscape(event: KeyboardEvent) {
     if (event.key === "Escape") {
       setIsDropdownOpen(false);
+      setIsCurrencyDropdownOpen(false);
     }
   }
   document.addEventListener("mousedown", handleClickOutside);
@@ -99,7 +117,7 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
   }
 
   return (
-    <header className="flex h-20 items-center justify-between gap-4 rounded-2xl bg-white px-4 shadow-sm sm:px-6">
+    <header className="flex h-20 items-center justify-between gap-4 rounded-2xl border border-border bg-surface px-4 shadow-[var(--shadow-card)] sm:px-6">
       {/* Greeting + date */}
       <div className="min-w-0 shrink-0">
         <h1 className="truncate text-base font-semibold sm:text-lg">
@@ -126,7 +144,7 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
           </div>
 
           {showDropdown && (
-            <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-80 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
+            <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-80 overflow-y-auto rounded-xl border border-border bg-surface shadow-lg">
               {matchingHoldings.length > 0 && (
                 <div className="p-2">
                   <p className="px-2 py-1 text-xs font-semibold text-gray-400">
@@ -190,9 +208,12 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
                           {asset.name}
                         </span>
                       </span>
-                      <span className="text-xs font-medium text-primary">
+                      <span className="text-xs font-medium text-text">
                         {asset.asset_prices?.priceDisplay != null
-                          ? `${asset.asset_prices.displayCurrency} ${asset.asset_prices.priceDisplay.toLocaleString()}`
+                          ? formatCurrency(
+                              asset.asset_prices.priceDisplay,
+                              asset.asset_prices.displayCurrency
+                            )
                           : "—"}
                       </span>
                     </button>
@@ -222,18 +243,36 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
             }`}
           />
         </button>
-        <button
-          type="button"
-          className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          <img
-            src="https://flagcdn.com/w40/ng.png"
-            alt="Nigeria flag"
-            className="h-4 w-5 rounded-sm object-cover"
-          />
-          <span>NGN</span>
-          <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
-        </button>
+        <div ref={currencyRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setIsCurrencyDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <span>{profile?.preferred_currency ?? "USD"}</span>
+            <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+          </button>
+
+          {isCurrencyDropdownOpen && (
+            <div className="absolute right-0 top-full z-20 mt-2 w-32 overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
+              {SUPPORTED_CURRENCIES.map((currencyCode) => (
+                <button
+                  key={currencyCode}
+                  type="button"
+                  disabled={changeCurrencyMutation.isPending}
+                  onClick={() => changeCurrencyMutation.mutate(currencyCode)}
+                  className={`flex w-full items-center px-3 py-2 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 ${
+                    profile?.preferred_currency === currencyCode
+                      ? "font-semibold text-accent-secondary"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {currencyCode}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <button
           type="button"

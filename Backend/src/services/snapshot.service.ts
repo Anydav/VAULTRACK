@@ -1,5 +1,11 @@
 import { supabase } from "../config/supabase.js";
 import { getDashboardSummary } from "./dashboard.service.js";
+import {
+  getUserCurrencyContext,
+  getExchangeRate,
+  convertCurrency,
+  BASE_CURRENCY,
+} from "./currency.service.js";
 
 export async function createPortfolioSnapshot(userId: string) {
   const summary = await getDashboardSummary(userId);
@@ -17,12 +23,6 @@ export async function createPortfolioSnapshot(userId: string) {
         total_cost_base: summary.totalCostBase,
         total_profit_loss_base: summary.totalProfitLossBase,
 
-        display_currency: summary.displayCurrency,
-        exchange_rate: summary.exchangeRate,
-        total_portfolio_value_display: summary.totalPortfolioValueDisplay,
-        total_cost_display: summary.totalCostDisplay,
-        total_profit_loss_display: summary.totalProfitLossDisplay,
-
         snapshot_date: today,
       },
       {
@@ -39,6 +39,33 @@ export async function createPortfolioSnapshot(userId: string) {
   return data;
 }
 
+// Snapshots only persist base-currency facts; the display-currency view is
+// derived from the user's *current* preference at read time so historical
+// rows never go stale when a user changes their preferred currency.
+function withDisplayValues(
+  snapshot: any,
+  displayCurrency: string,
+  exchangeRate: number
+) {
+  return {
+    ...snapshot,
+    display_currency: displayCurrency,
+    exchange_rate: exchangeRate,
+    total_portfolio_value_display: convertCurrency(
+      Number(snapshot.total_portfolio_value_base),
+      exchangeRate
+    ),
+    total_cost_display: convertCurrency(
+      Number(snapshot.total_cost_base),
+      exchangeRate
+    ),
+    total_profit_loss_display: convertCurrency(
+      Number(snapshot.total_profit_loss_base),
+      exchangeRate
+    ),
+  };
+}
+
 export async function getPortfolioSnapshots(userId: string) {
   const { data, error } = await supabase
     .from("portfolio_snapshots")
@@ -50,7 +77,16 @@ export async function getPortfolioSnapshots(userId: string) {
     throw new Error(error.message);
   }
 
-  return data;
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  const { displayCurrency } = await getUserCurrencyContext(userId);
+  const exchangeRate = await getExchangeRate(BASE_CURRENCY, displayCurrency);
+
+  return data.map((snapshot) =>
+    withDisplayValues(snapshot, displayCurrency, exchangeRate)
+  );
 }
 
 export async function getSnapshotPerformance(userId: string) {

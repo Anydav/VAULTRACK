@@ -16,6 +16,21 @@ export async function createUserAsset(input: CreateUserAssetInput) {
   acquiredAt,
 } = input;
 
+const { data: account, error: accountError } = await supabase
+  .from("accounts")
+  .select("id")
+  .eq("id", accountId)
+  .eq("user_id", userId)
+  .maybeSingle();
+
+if (accountError) {
+  throw new Error(accountError.message);
+}
+
+if (!account) {
+  throw new Error("Account not found");
+}
+
 let normalizedCostPrice = costPrice;
 
 if (costPrice != null && costCurrency) {
@@ -75,12 +90,21 @@ const { data, error } = await supabase
   return data;
 }
 
-export async function getUserAssets(userId: string) {
+export async function getUserAssets(
+  userId: string,
+  currencyContext?: { displayCurrency: string; exchangeRate: number }
+) {
   const baseCurrency = BASE_CURRENCY;
-  const { displayCurrency } = await getUserCurrencyContext(userId);
-  const exchangeRate = await getExchangeRate(baseCurrency, displayCurrency);
 
-  const { data, error } = await supabase
+  const [{ displayCurrency, exchangeRate }, { data, error }] = await Promise.all([
+    currencyContext
+      ? Promise.resolve(currencyContext)
+      : (async () => {
+          const { displayCurrency } = await getUserCurrencyContext(userId);
+          const exchangeRate = await getExchangeRate(baseCurrency, displayCurrency);
+          return { displayCurrency, exchangeRate };
+        })(),
+    supabase
     .from("user_assets")
     .select(
       `
@@ -115,7 +139,8 @@ export async function getUserAssets(userId: string) {
       `
     )
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }),
+  ]);
 
   if (error) {
     throw new Error(error.message);
@@ -142,7 +167,7 @@ export async function getUserAssets(userId: string) {
         exchangeRate,
 
         latestPrice,
-
+        latestPriceDisplay: convertCurrency(latestPrice, exchangeRate),
         currentValueBase,
         totalCostBase,
         profitLossBase,
@@ -156,6 +181,9 @@ export async function getUserAssets(userId: string) {
         priceCurrency:
           holding.assets?.asset_prices?.currency || holding.assets?.currency,
         priceLastUpdated: holding.assets?.asset_prices?.price_time || null,
+        // displayCurrency already exists above — this is just a reminder
+        // that every *Display-suffixed field is in displayCurrency, not
+        // priceCurrency. Frontend should label those fields accordingly.
       },
     };
   });

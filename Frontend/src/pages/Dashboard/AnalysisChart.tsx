@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { getPortfolioSnapshots } from "../../services/snapShot.service";
 import {ErrorState} from "../../components/ui/errorState";
+import { formatCurrency } from "../../utils";
 
 type RangeOption = "1W" | "1M" | "3M" | "1Y" | "All";
 
@@ -71,9 +72,9 @@ export default function AnalysisChart() {
 }, [filteredData]);
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-primary">Analysis</h2>
+        <h2 className="text-lg font-semibold text-text">Analysis</h2>
 
         <div className="flex gap-1">
           {RANGE_OPTIONS.map((option) => (
@@ -105,20 +106,20 @@ export default function AnalysisChart() {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12, fill: "#94A3B8" }}
+                tick={{ fontSize: 12, fill: "var(--color-text-muted)" }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
               domain={[0, "dataMax"]}
-                tick={{ fontSize: 12, fill: "#94A3B8" }}
+                tick={{ fontSize: 12, fill: "var(--color-text-muted)" }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(value) =>
@@ -129,13 +130,13 @@ export default function AnalysisChart() {
               />
               <Tooltip
                 formatter={(value: number, _name, props) =>
-                  `${props.payload.currency ?? ""} ${value.toLocaleString()}`
+                  formatCurrency(value, props.payload.currency)
                 }
               />
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="var(--color-primary)"
+                stroke="var(--color-accent)"
                 strokeWidth={2}
                 fill="url(#portfolioGradient)"
               />

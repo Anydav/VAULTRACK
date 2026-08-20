@@ -50,7 +50,7 @@ export default function AssetDetailsStep() {
       <div>
         <div className="mb-1 flex items-center justify-between">
           <label className="text-xs text-gray-500">Quantity</label>
-          <span className="text-sm font-semibold text-primary">
+          <span className="text-sm font-semibold text-text">
             {quantity || "0"}
           </span>
         </div>
@@ -95,7 +95,7 @@ export default function AssetDetailsStep() {
               }
             }}
             disabled={selectedAsset?.asset_prices?.priceDisplay == null}
-            className="whitespace-nowrap rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+            className="whitespace-nowrap rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-accent-secondary hover:text-text disabled:cursor-not-allowed disabled:opacity-40"
           >
             Current Price
           </button>
@@ -130,7 +130,7 @@ export default function AssetDetailsStep() {
             onClick={() =>
               setAcquiredAt(new Date().toISOString().split("T")[0])
             }
-            className="whitespace-nowrap rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-[#17352F] hover:text-[#17352F]"
+            className="whitespace-nowrap rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-accent-secondary hover:text-text"
           >
             Today
           </button>
@@ -146,7 +146,7 @@ export default function AssetDetailsStep() {
       <button
         type="submit"
         disabled={mutation.isPending}
-        className="w-full rounded-xl bg-[#17352F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0f241f] disabled:opacity-60"
+        className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
       >
         {mutation.isPending ? "Adding..." : "Add Asset"}
       </button>
