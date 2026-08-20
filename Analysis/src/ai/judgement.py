@@ -76,7 +76,7 @@ Write an updated, concise summary that incorporates this message into the existi
 
     try:
         response = client.models.generate_content(
-            model="gemini-flash-latest",
+            model="gemini-3.5-flash",
             contents=fold_prompt
         )
     except Exception as e:
