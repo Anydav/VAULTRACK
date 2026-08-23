@@ -97,7 +97,7 @@ export default function AccountAssetsTable({
   isLoading={isLoading}
   isError={isError}
   onRetry={() => refetch()}
-  emptyMessage="No assets in this account yet"
+  emptyMessage="No assets in this custodian yet"
 />
     </div>
   );

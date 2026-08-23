@@ -11,12 +11,12 @@ export async function searchAssetsController(req: Request, res: Response) {
     }
 
     const market = req.query.market as string;
-    const query = req.query.query as string;
+    const query = (req.query.query as string) ?? "";
 
-    if (!market || !query) {
+    if (!market) {
       return res.status(400).json({
         success: false,
-        message: "Market and query are required",
+        message: "Market is required",
       });
     }
 

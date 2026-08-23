@@ -118,7 +118,7 @@ export default function HoldingTable() {
     },
     {
       key: "account",
-      header: "Account",
+      header: "Custodian",
       render: (holding) => holding.accounts?.name ?? "-",
     },
   ];

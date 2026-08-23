@@ -107,3 +107,27 @@ body {
 h1, h2, h3 {
   font-family: "Sora", ui-sans-serif, system-ui, sans-serif;
 }
+
+/* A minimal scroll indicator: no visible track, just a short colored
+   thumb at the edge instead of a full browser scrollbar. */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 9999px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-accent-secondary);
+}

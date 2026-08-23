@@ -98,7 +98,7 @@ export function Sidebar() {
             >
               <span className="flex items-center gap-3">
                 <img src={AccountsIcon} alt="" className="h-5 w-5 object-contain" />
-               <span>Accounts</span>
+               <span>Custodians</span>
               </span>
 
               <ChevronDown
@@ -113,7 +113,7 @@ export function Sidebar() {
                 {accountsLoading ? (
                   <p className="text-sm text-white/60">Loading...</p>
                 ) : accounts.length === 0 ? (
-                  <p className="text-sm text-white/60">No accounts yet</p>
+                  <p className="text-sm text-white/60">No custodians yet</p>
                 ): (
                   accounts.map((account) => (
                     <NavLink

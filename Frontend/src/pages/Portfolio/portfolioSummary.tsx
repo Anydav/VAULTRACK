@@ -60,7 +60,7 @@ export default function PortfolioSummary() {
       value: formatCurrency(summary.totalCostDisplay, summary.displayCurrency),
     },
     {
-      label: "Accounts",
+      label: "Custodians",
       value: accounts.length,
     },
     {

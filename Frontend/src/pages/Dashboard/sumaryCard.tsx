@@ -117,7 +117,7 @@ export default function SummaryCard() {
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-400">No of Account</p>
+          <p className="text-xs text-gray-400">No of Custodian</p>
           <p className="text-lg font-bold text-text">
             {accounts.length}
           </p>

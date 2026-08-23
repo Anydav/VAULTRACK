@@ -6,6 +6,34 @@ import { useAddAssetModal } from "../../context/addAssetModelcontext";
 import { Asset } from "../../types/asset";
 import { formatCurrency } from "../../utils";
 
+function interleave(a: Asset[], b: Asset[]): Asset[] {
+  const result: Asset[] = [];
+  const max = Math.max(a.length, b.length);
+  for (let i = 0; i < max; i++) {
+    if (a[i]) result.push(a[i]);
+    if (b[i]) result.push(b[i]);
+  }
+  return result;
+}
+
+async function fetchMixedAssets(query: string): Promise<Asset[]> {
+  const [cryptoResult, ngxResult] = await Promise.allSettled([
+    searchAssets(query, "CRYPTO"),
+    searchAssets(query, "NGX"),
+  ]);
+
+  // Only surface an error if BOTH markets failed — one market being
+  // down shouldn't hide results the other one did return.
+  if (cryptoResult.status === "rejected" && ngxResult.status === "rejected") {
+    throw cryptoResult.reason;
+  }
+
+  const cryptoAssets = cryptoResult.status === "fulfilled" ? cryptoResult.value : [];
+  const ngxAssets = ngxResult.status === "fulfilled" ? ngxResult.value : [];
+
+  return interleave(cryptoAssets, ngxAssets).slice(0, 10);
+}
+
 export default function SelectAssetStep() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -15,18 +43,24 @@ export default function SelectAssetStep() {
     return () => clearTimeout(timeout);
   }, [query]);
 
-  const { data: results = [], isFetching } = useQuery({
+  const {
+    data: results = [],
+    isFetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["asset-search", debouncedQuery],
-    queryFn: () => searchAssets(debouncedQuery),
-    enabled: debouncedQuery.length > 0,
+    queryFn: () => fetchMixedAssets(debouncedQuery),
   });
 
- const { setSelectedAsset, goToStep } = useAddAssetModal();
+  const { setSelectedAsset, goToStep } = useAddAssetModal();
 
   function handleSelectAsset(asset: Asset) {
     setSelectedAsset(asset);
     goToStep("details");
   }
+
+  const isBrowsing = debouncedQuery.length === 0;
 
   return (
     <div className="space-y-3">
@@ -41,18 +75,31 @@ export default function SelectAssetStep() {
         />
       </div>
 
+      {isBrowsing && !isFetching && results.length > 0 && (
+        <p className="text-xs text-gray-400">
+          Popular assets — search to find something specific.
+        </p>
+      )}
+
       <div className="max-h-64 space-y-1 overflow-y-auto">
         {isFetching ? (
           <p className="py-4 text-center text-sm text-gray-400">
-            Searching...
+            {isBrowsing ? "Loading assets..." : "Searching..."}
           </p>
-        ) : debouncedQuery.length === 0 ? (
-          <p className="py-4 text-center text-sm text-gray-400">
-            Start typing to search assets
-          </p>
+        ) : isError ? (
+          <div className="flex items-center justify-center gap-3 py-4 text-sm text-danger">
+            <span>Couldn't load assets.</span>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="font-semibold underline"
+            >
+              Try again
+            </button>
+          </div>
         ) : results.length === 0 ? (
           <p className="py-4 text-center text-sm text-gray-400">
-            No results found
+            {isBrowsing ? "No assets available yet" : "No results found"}
           </p>
         ) : (
           results.map((asset) => (
@@ -63,8 +110,13 @@ export default function SelectAssetStep() {
               className="flex w-full items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-left text-sm hover:border-primary hover:bg-gray-50"
             >
               <span className="flex flex-col items-start">
-                <span className="font-medium text-text">
-                  {asset.symbol}
+                <span className="flex items-center gap-2">
+                  <span className="font-medium text-text">
+                    {asset.symbol}
+                  </span>
+                  <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">
+                    {asset.market}
+                  </span>
                 </span>
                 <span className="text-xs text-gray-400">{asset.name}</span>
               </span>

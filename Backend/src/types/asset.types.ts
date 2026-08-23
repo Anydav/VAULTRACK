@@ -8,5 +8,5 @@ export interface CreateAssetInput {
 
 export interface SearchAssetInput {
   market: string;
-  query: string;
+  query?: string;
 }

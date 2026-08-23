@@ -118,7 +118,7 @@ export default function AssetsList() {
     },
     {
       key: "account",
-      header: "Account",
+      header: "Custodian",
       render: (holding) => holding.accounts?.name ?? "-",
     },
   ];

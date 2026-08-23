@@ -68,19 +68,27 @@ export async function searchAssets(input: SearchAssetInput, userId: string) {
   const { market, query } = input;
 
   const normalizedMarket = market.toUpperCase().trim();
-  const normalizedQuery = query.trim();
+  const normalizedQuery = (query ?? "").trim();
 
-  const { data: localAssets, error: localError } = await supabase
+  let localAssetsQuery = supabase
     .from("assets")
     .select(
       "id, symbol, name, asset_type, market, currency, external_id, asset_prices ( price, currency, price_time )"
     )
-    .eq("market", normalizedMarket)
-    .or(
+    .eq("market", normalizedMarket);
+
+  // No query yet (e.g. the asset picker's default browse list) — just
+  // list assets for the market instead of filtering by symbol/name.
+  if (normalizedQuery) {
+    localAssetsQuery = localAssetsQuery.or(
       `symbol.ilike.${escapePostgrestValue(
         `%${normalizedQuery}%`
       )},name.ilike.${escapePostgrestValue(`%${normalizedQuery}%`)}`
-    )
+    );
+  }
+
+  const { data: localAssets, error: localError } = await localAssetsQuery
+    .order("symbol", { ascending: true })
     .limit(10);
 
   if (localError) {
@@ -89,7 +97,10 @@ export async function searchAssets(input: SearchAssetInput, userId: string) {
  if (localAssets && localAssets.length > 0) {
     return await attachDisplayPrices(localAssets, userId);
   }
-  if (normalizedMarket !== "CRYPTO") {
+  // The CoinGecko discovery fallback only makes sense for an actual
+  // search term — an empty browse query with no local rows just means
+  // there's nothing to show yet.
+  if (!normalizedQuery || normalizedMarket !== "CRYPTO") {
     return [];
   }
   const data = await searchCryptoAssetsFromCoinGecko(normalizedQuery);

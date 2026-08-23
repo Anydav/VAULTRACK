@@ -10,7 +10,7 @@ type GroupBy = "asset" | "market" | "account";
 const GROUP_OPTIONS: { label: string; value: GroupBy }[] = [
   { label: "Asset", value: "asset" },
   { label: "Market", value: "market" },
-  { label: "Account", value: "account" },
+  { label: "Custodian", value: "account" },
 ];
 
 const COLORS = [ "var(--color-primary)","var(--color-accent)", "#F5B841", "#7C9EFF", "#E57373", "#8E8E8E"];

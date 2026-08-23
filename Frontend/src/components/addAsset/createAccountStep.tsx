@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft } from "lucide-react";
 import { createAccount } from "../../services/account.service";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
 
@@ -28,14 +29,24 @@ export default function CreateAccountStep() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
+      <button
+        type="button"
+        onClick={() => goToStep("account")}
+        className="mb-1 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-text"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </button>
+
       <div>
         <label className="mb-1 block text-xs text-gray-500">
-          Account name
+          Custodian name
         </label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Kuda, Robinhood"
           required
           className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#17352F]"
         />
@@ -43,13 +54,13 @@ export default function CreateAccountStep() {
 
       <div>
         <label className="mb-1 block text-xs text-gray-500">
-          Account type
+          Custodian type
         </label>
         <input
           type="text"
           value={accountType}
           onChange={(e) => setAccountType(e.target.value)}
-          placeholder="e.g. bank, wallet"
+          placeholder="e.g. bank, exchange, brokerage"
           required
           className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#17352F]"
         />
@@ -79,7 +90,7 @@ export default function CreateAccountStep() {
         disabled={mutation.isPending}
         className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
       >
-        {mutation.isPending ? "Creating..." : "Create Account"}
+        {mutation.isPending ? "Adding..." : "Add Custodian"}
       </button>
     </form>
   );

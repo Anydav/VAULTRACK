@@ -57,7 +57,7 @@ export default function AccountSummaryCard({
         <div className="flex min-h-[100px] flex-col items-center justify-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-text" />
           <p className="text-sm font-medium text-gray-400">
-            Loading account...
+            Loading custodian...
           </p>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function AccountSummaryCard({
   if (!account) {
     return (
       <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
-        <p className="text-sm text-gray-400">Account not found.</p>
+        <p className="text-sm text-gray-400">Custodian not found.</p>
       </div>
     );
   }
