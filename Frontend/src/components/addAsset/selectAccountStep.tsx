@@ -71,7 +71,7 @@ function CustodianLogo({ name, domain, color, initials }: CustodianLogoProps) {
     return (
       <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-gray-100 bg-white p-2.5 shadow-sm">
         <img
-          src={`https://logo.clearbit.com/${domain}?size=128`}
+          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
           alt={`${name} logo`}
           className="h-full w-full object-contain"
           onError={() => setFailed(true)}

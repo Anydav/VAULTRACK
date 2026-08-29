@@ -19,8 +19,14 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className={`thin-scrollbar w-full ${SIZE_CLASSES[size]} max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl`}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      onClick={onClose}
+    >
+      <div
+        className={`thin-scrollbar w-full ${SIZE_CLASSES[size]} max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl`}
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text">{title}</h2>
           <button
