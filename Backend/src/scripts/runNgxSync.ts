@@ -1,8 +1,8 @@
-import cron from "node-cron";
 import { syncStockPrices } from "../services/price.service.js";
 import { isNgxOpen } from "../services/mansaMarket.service.js";
 
-async function runNgxSync(label: string) {
+async function run() {
+  const label = process.argv[2] ?? "scheduled run";
   console.log(`Running NGX price sync (${label})...`);
 
   try {
@@ -10,21 +10,19 @@ async function runNgxSync(label: string) {
 
     if (!isOpen) {
       console.log(`NGX is closed — skipping sync (${label}).`);
-      return;
+      process.exit(0);
     }
 
     const updated = await syncStockPrices();
-    console.log(`NGX price sync completed (${label}): ${updated.length} prices updated`);
+    console.log(
+      `NGX price sync completed (${label}): ${updated.length} prices updated`
+    );
+    process.exit(0);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error(`NGX price sync failed (${label}):`, message);
+    process.exit(1);
   }
 }
 
-export function startNgxSyncJob() {
-  const cronOptions = { timezone: "Africa/Lagos" };
-
-  cron.schedule("15 9 * * 1-5", () => runNgxSync("market open"), cronOptions);
-  cron.schedule("30 12 * * 1-5", () => runNgxSync("midday"), cronOptions);
-  cron.schedule("15 14 * * 1-5", () => runNgxSync("pre-close"), cronOptions);
-}
+run();
