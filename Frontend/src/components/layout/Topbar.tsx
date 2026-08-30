@@ -6,7 +6,7 @@ import { getMe, updatePreferredCurrency } from "../../services/profile.service";
 import { getUserAssets } from "../../services/userAssets.service";
 import { searchAssets } from "../../services/asset.service";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
-import { SUPPORTED_CURRENCIES, formatCurrency } from "../../utils";
+import { SUPPORTED_CURRENCIES, CURRENCY_META, formatCurrency } from "../../utils";
 
 export function Topbar() {
   const [query, setQuery] = useState("");
@@ -249,27 +249,49 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
             onClick={() => setIsCurrencyDropdownOpen((prev) => !prev)}
             className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
+            <span>{CURRENCY_META[profile?.preferred_currency as keyof typeof CURRENCY_META]?.flag ?? "🇺🇸"}</span>
             <span>{profile?.preferred_currency ?? "USD"}</span>
             <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
           </button>
 
           {isCurrencyDropdownOpen && (
-            <div className="absolute right-0 top-full z-20 mt-2 w-32 overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
-              {SUPPORTED_CURRENCIES.map((currencyCode) => (
-                <button
-                  key={currencyCode}
-                  type="button"
-                  disabled={changeCurrencyMutation.isPending}
-                  onClick={() => changeCurrencyMutation.mutate(currencyCode)}
-                  className={`flex w-full items-center px-3 py-2 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 ${
-                    profile?.preferred_currency === currencyCode
-                      ? "font-semibold text-accent-secondary"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {currencyCode}
-                </button>
-              ))}
+            <div className="absolute right-0 top-full z-20 mt-2 w-72 overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
+              <p className="border-b border-border px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                Display Currency
+              </p>
+              <div className="grid grid-cols-2 gap-1 p-2">
+                {SUPPORTED_CURRENCIES.map((currencyCode) => {
+                  const meta = CURRENCY_META[currencyCode];
+                  const isSelected = profile?.preferred_currency === currencyCode;
+
+                  return (
+                    <button
+                      key={currencyCode}
+                      type="button"
+                      disabled={changeCurrencyMutation.isPending}
+                      onClick={() => changeCurrencyMutation.mutate(currencyCode)}
+                      title={meta.name}
+                      className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-left transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 ${
+                        isSelected ? "bg-accent" : ""
+                      }`}
+                    >
+                      <span className="text-base leading-none">{meta.flag}</span>
+                      <span className="flex min-w-0 flex-col">
+                        <span
+                          className={`text-sm font-semibold ${
+                            isSelected ? "text-accent-secondary" : "text-gray-700"
+                          }`}
+                        >
+                          {currencyCode}
+                        </span>
+                        <span className="truncate text-[10px] text-gray-400">
+                          {meta.name}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

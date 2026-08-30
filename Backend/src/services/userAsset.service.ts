@@ -33,8 +33,18 @@ if (!account) {
 
 let normalizedCostPrice = costPrice;
 
-if (costPrice != null && costCurrency) {
-  const { amount } = await convertAmount(costPrice, costCurrency, BASE_CURRENCY);
+// cost_currency is always persisted as BASE_CURRENCY below, so the price
+// must actually be converted into it — even when the caller didn't send a
+// costCurrency. In that case we treat the price as already being in
+// BASE_CURRENCY (convertAmount is a no-op when currencies match) rather
+// than storing an unconverted number under a currency label that doesn't
+// necessarily match what was submitted.
+if (costPrice != null) {
+  const { amount } = await convertAmount(
+    costPrice,
+    costCurrency ?? BASE_CURRENCY,
+    BASE_CURRENCY
+  );
   normalizedCostPrice = amount;
 }
 

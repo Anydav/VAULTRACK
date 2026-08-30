@@ -30,7 +30,7 @@ async function run() {
   }
 
   console.log(`Daily portfolio snapshot job completed. ${failures} failure(s).`);
-  process.exit(failures > 0 && failures === users.length ? 1 : 0);
+  process.exit(failures > 0 ? 1 : 0);
 }
 
 run();

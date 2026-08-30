@@ -1,8 +1,24 @@
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { loginUser, signupUser } from "../services/auth.service.js";
 import { validatePassword } from "../utils/passwordValidator.js";
 import { validateEmail } from "../utils/emailValidator.js";
 import { supabase } from "../config/supabase.js";
+
+const DEFAULT_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+
+// Keep the cookie's lifetime matched to the token's actual expiry (from
+// JWT_EXPIRES_IN) instead of a hardcoded value that could silently drift
+// from it.
+function getTokenMaxAge(token: string): number {
+  const decoded = jwt.decode(token) as { exp?: number } | null;
+
+  if (!decoded?.exp) {
+    return DEFAULT_COOKIE_MAX_AGE;
+  }
+
+  return decoded.exp * 1000 - Date.now();
+}
 
 export async function signupController(req: Request, res: Response) {
   try {
@@ -41,7 +57,7 @@ export async function signupController(req: Request, res: Response) {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: getTokenMaxAge(result.token),
     });
 
     return res.status(201).json({
@@ -53,7 +69,9 @@ export async function signupController(req: Request, res: Response) {
     const message =
       error instanceof Error ? error.message : "Something went wrong";
 
-    return res.status(500).json({
+    const status = message === "Email already exists" ? 409 : 500;
+
+    return res.status(status).json({
       success: false,
       message,
     });
@@ -80,7 +98,7 @@ export async function loginController(req: Request, res: Response) {
     httpOnly: true,
     secure: true,
     sameSite: "none",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: getTokenMaxAge(result.token),
 });
 
 return res.status(200).json({

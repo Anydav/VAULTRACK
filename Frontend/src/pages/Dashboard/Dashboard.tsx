@@ -1,6 +1,7 @@
 import SummaryCard from "./sumaryCard";
 import AssetHoldingCard from "./AssetHoldingCard";
 import AnalyisChart from "./AnalysisChart";
+import CurrencyOnboardingModal from "./CurrencyOnboardingModal";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
 
 export default function Dashboard() {
@@ -8,6 +9,7 @@ export default function Dashboard() {
 
   return  (
     <div className="space-y-6">
+      <CurrencyOnboardingModal />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-text">Dashboard</h1>
         <button

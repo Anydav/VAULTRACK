@@ -41,8 +41,8 @@ app.get("/", (req: Request, res: Response) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.get("/api/test-db", async (req: Request, res: Response) => {
-  const { data, error } = await supabase.from("profiles").select("*").limit(1);
+app.get("/api/test-db", authMiddleware, async (req: Request, res: Response) => {
+  const { data, error } = await supabase.from("profiles").select("id").limit(1);
 
   if (error) {
     return res.status(500).json({

@@ -4,6 +4,7 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
 list_models.py
 
 # Virtual environment

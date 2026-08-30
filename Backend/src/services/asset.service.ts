@@ -1,5 +1,5 @@
 import { supabase } from "../config/supabase.js";
-import { CreateAssetInput, SearchAssetInput } from "../types/asset.types.js";
+import { SearchAssetInput } from "../types/asset.types.js";
 import { searchCryptoAssetsFromCoinGecko } from "./coinGecko.service.js";
 import { syncCryptoPricesIfStale } from "./price.service.js";
 import {getUserCurrencyContext,getExchangeRate,convertCurrency} from "./currency.service.js";
@@ -39,31 +39,6 @@ async function attachDisplayPrices(assets: any[], userId: string) {
     })
   );
 }
-export async function createAsset(input: CreateAssetInput) {
-  const { symbol, name, assetType, market, currency } = input;
-
-  const normalizedSymbol = symbol.toUpperCase().trim();
-  const normalizedMarket = market.toUpperCase().trim();
-
-  const { data, error } = await supabase
-    .from("assets")
-    .insert({
-      symbol: normalizedSymbol,
-      name,
-      asset_type: assetType,
-      market: normalizedMarket,
-      currency,
-    })
-    .select("id, symbol, name, asset_type, market, currency, created_at")
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-}
-
 export async function searchAssets(input: SearchAssetInput, userId: string) {
   const { market, query } = input;
 

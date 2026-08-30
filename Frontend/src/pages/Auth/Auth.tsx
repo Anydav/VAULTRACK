@@ -6,6 +6,7 @@ import { AuthForm } from "./AuthForm";
 import { LeftPanel } from "./leftPanel";
 import axios from "axios";
 import { useToast } from "../../context/toastContext";
+import { CURRENCY_PROMPT_STORAGE_KEY } from "../../utils";
 
 type AuthMode = "login" | "signup";
 
@@ -35,6 +36,9 @@ export default function Auth() {
       });
     },
     onSuccess: () => {
+      if (!isLogin) {
+        sessionStorage.setItem(CURRENCY_PROMPT_STORAGE_KEY, "1");
+      }
       navigate("/dashboard");
     },
     onError: (error) => {
@@ -52,6 +56,11 @@ export default function Auth() {
           );
           message =
             error.response.data?.message || `Request failed (${error.response.status})`;
+        } else if (error.code === "ECONNABORTED") {
+          // Our own client-side timeout fired — most likely the backend
+          // was asleep and took longer than we were willing to wait.
+          console.error("[auth] Request timed out:", error.message);
+          message = "The server took too long to respond. Please try again.";
         } else if (error.request) {
           // Request was sent but no response ever came back — usually
           // means CORS blocked it, the backend crashed, or the URL is wrong.

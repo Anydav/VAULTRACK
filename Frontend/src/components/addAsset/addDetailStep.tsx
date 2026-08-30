@@ -104,18 +104,6 @@ export default function AssetDetailsStep() {
 
       <div>
         <label className="mb-1 block text-xs text-gray-500">
-          Cost currency
-        </label>
-        <input
-  type="text"
-  value={costCurrency}
-  disabled
-  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 outline-none"
-/>
-      </div>
-
-      <div>
-        <label className="mb-1 block text-xs text-gray-500">
           Acquired date (optional)
         </label>
         <div className="flex items-center gap-2">

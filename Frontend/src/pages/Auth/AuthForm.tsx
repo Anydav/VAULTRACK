@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Input } from "../../components/ui/input";
 import { Toast } from "../../components/ui/errorToast";
@@ -37,6 +37,20 @@ export function AuthForm({
 }: AuthFormProps) {
   const isLogin = mode === "login";
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [isSlow, setIsSlow] = useState(false);
+
+  // A first request to a sleeping backend can take 20-30s to wake up —
+  // after a few seconds of waiting, swap in messaging that explains why,
+  // instead of leaving a bare "Please wait..." that reads as broken.
+  useEffect(() => {
+    if (!isPending) {
+      setIsSlow(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => setIsSlow(true), 4000);
+    return () => clearTimeout(timeout);
+  }, [isPending]);
 
   const passwordRequirements = [
     { label: "At least 8 characters", valid: password.length >= 8 },
@@ -171,8 +185,20 @@ export function AuthForm({
             disabled={isPending || !isFormValid}
             className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isPending ? "Please wait..." : isLogin ? "Login" : "Create Account"}
+            {isPending
+              ? isSlow
+                ? "Waking up the server..."
+                : "Please wait..."
+              : isLogin
+              ? "Login"
+              : "Create Account"}
           </button>
+
+          {isPending && isSlow && (
+            <p className="text-center text-xs text-gray-400">
+              This can take up to 30 seconds if the server has been idle.
+            </p>
+          )}
         </div>
 
        {/* <div className="my-4 flex items-center gap-3">
