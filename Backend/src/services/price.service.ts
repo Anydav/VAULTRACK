@@ -73,11 +73,13 @@ if (priceRows.length === 0) {
 }
 
 export async function syncCryptoPricesIfStale(staleMinutes = 5) {
+  // Use the newest price (= when the last sync ran), not the oldest: a coin
+  // CoinGecko stops pricing never updates, and would force a sync every time.
   const { data: latestPrices, error } = await supabase
     .from("asset_prices")
     .select("price_time")
     .eq("source", "coingecko")
-    .order("price_time", { ascending: true })
+    .order("price_time", { ascending: false })
     .limit(1);
 
   if (error) {
@@ -88,10 +90,10 @@ export async function syncCryptoPricesIfStale(staleMinutes = 5) {
     return await syncCryptoPrices();
   }
 
-  const oldestPriceTime = new Date(latestPrices[0].price_time).getTime();
+  const lastSyncTime = new Date(latestPrices[0].price_time).getTime();
   const now = Date.now();
 
-  const ageInMinutes = (now - oldestPriceTime) / (1000 * 60);
+  const ageInMinutes = (now - lastSyncTime) / (1000 * 60);
 
   if (ageInMinutes >= staleMinutes) {
     return await syncCryptoPrices();
@@ -166,11 +168,12 @@ export async function syncStockPrices() {
 }
 
 export async function syncStockPricesIfStale(staleMinutes = 30) {
+  // Newest price = last sync time (see syncCryptoPricesIfStale).
   const { data: latestPrices, error } = await supabase
     .from("asset_prices")
     .select("price_time")
     .eq("source", "mansa")
-    .order("price_time", { ascending: true })
+    .order("price_time", { ascending: false })
     .limit(1);
 
   if (error) {
@@ -181,8 +184,8 @@ export async function syncStockPricesIfStale(staleMinutes = 30) {
     return await syncStockPrices();
   }
 
-  const oldestPriceTime = new Date(latestPrices[0].price_time).getTime();
-  const ageInMinutes = (Date.now() - oldestPriceTime) / (1000 * 60);
+  const lastSyncTime = new Date(latestPrices[0].price_time).getTime();
+  const ageInMinutes = (Date.now() - lastSyncTime) / (1000 * 60);
 
   if (ageInMinutes >= staleMinutes) {
     return await syncStockPrices();

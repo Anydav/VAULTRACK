@@ -11,6 +11,9 @@ import { SUPPORTED_CURRENCIES, CURRENCY_META, formatCurrency } from "../../utils
 export function Topbar() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  // See selectAssetStep: "Search all coins" applies only to the text it was clicked for.
+  const [allCoinsQuery, setAllCoinsQuery] = useState<string | null>(null);
+  const searchAllCoins = allCoinsQuery === debouncedQuery;
   const searchRef = useRef<HTMLDivElement>(null);
   const currencyRef = useRef<HTMLDivElement>(null);
  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -46,10 +49,11 @@ export function Topbar() {
   });
 
   const { data: marketResults = [], isFetching: marketLoading, isError: marketError, refetch: refetchMarket } = useQuery({
-  queryKey: ["asset-search", debouncedQuery],
+  // Own cache name: the add-asset picker shapes its results differently.
+  queryKey: ["topbar-asset-search", debouncedQuery, searchAllCoins],
   queryFn: async () => {
   const results = await Promise.allSettled([
-    searchAssets(debouncedQuery, "CRYPTO"),
+    searchAssets(debouncedQuery, "CRYPTO", searchAllCoins),
     searchAssets(debouncedQuery, "NGX"),
   ]);
   return results
@@ -218,6 +222,16 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
                       </span>
                     </button>
                   ))
+                )}
+                {!marketLoading && !marketError && !searchAllCoins && (
+                  <button
+                    type="button"
+                    onClick={() => setAllCoinsQuery(debouncedQuery)}
+                    className="w-full px-2 py-2 text-left text-xs text-gray-400 hover:text-gray-700"
+                  >
+                    Not seeing your coin?{" "}
+                    <span className="font-semibold underline">Search all coins</span>
+                  </button>
                 )}
               </div>
             </div>

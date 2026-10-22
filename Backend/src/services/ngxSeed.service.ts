@@ -16,17 +16,20 @@ export interface SeedNgxAssetsResult {
 export async function seedNgxAssets(): Promise<SeedNgxAssetsResult> {
   const { data: stocks } = await fetchNgxStocks();
 
+  // NGX tickers are unique, so the ticker doubles as external_id. That lets
+  // stocks and crypto share the same (market, external_id) unique key.
   const rows = stocks.map((stock) => ({
     symbol: stock.ticker,
     name: stock.name,
     market: "NGX",
     asset_type: "stock",
     currency: "NGN",
+    external_id: stock.ticker,
   }));
 
   const { error, data: seededRows } = await supabase
     .from("assets")
-    .upsert(rows, { onConflict: "symbol,market" })
+    .upsert(rows, { onConflict: "market,external_id" })
     .select();
 
   if (error) {
