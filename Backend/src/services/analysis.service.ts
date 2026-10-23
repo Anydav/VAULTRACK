@@ -27,6 +27,22 @@ interface AnalyzeResponse {
 
 const FLASK_URL = process.env.FLASK_ANALYSIS_URL;
 
+// Errors we raise on purpose, with a message that's safe to show the user.
+class AnalysisServiceError extends Error {}
+
+// Flask replies to errors with { "error": "..." }; use that message when present.
+function readFlaskError(body: string, status: number): string {
+  try {
+    const parsed = JSON.parse(body);
+    if (typeof parsed?.error === "string") {
+      return parsed.error;
+    }
+  } catch {
+    // Not JSON (e.g. an HTML error page from Render)
+  }
+  return `The analysis service failed (status ${status}).`;
+}
+
 function mapToFlaskHoldings(enrichedAssets: any[]): FlaskHolding[] {
   return enrichedAssets.map((holding) => ({
     symbol: holding.assets?.symbol,
@@ -47,7 +63,7 @@ export async function getPortfolioAnalysis(
   console.log("[analysis.service] Sending to Flask:", JSON.stringify(holdings, null, 2));
 
   const exit = new AbortController();
-  const timoutId = setTimeout(() => exit.abort(), 120000); // 120 seconds timeout
+  const timeoutId = setTimeout(() => exit.abort(), 120000); // 120 seconds timeout
 
   try {
     const response = await fetch(`${FLASK_URL}/analyze`, {
@@ -63,22 +79,28 @@ export async function getPortfolioAnalysis(
     });
 
     console.log("[analysis.service] Flask status:", response.status);
-    clearTimeout(timoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[analysis.service] Flask error body:", errorText);
-      throw new Error(`Analysis service returned ${response.status}`);
+      throw new AnalysisServiceError(readFlaskError(errorText, response.status));
     }
 
-    return response.json();
+    return await response.json();
   } catch (error) {
     console.error("[analysis.service] ERROR:", error);
 
+    if (error instanceof AnalysisServiceError) {
+      throw error;
+    }
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error("Analysis service timed out. Please try again.");
     }
-
+    if (error instanceof SyntaxError) {
+      throw new Error("The analysis service sent back an invalid response.");
+    }
     throw new Error("Could not reach the analysis service.");
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
