@@ -36,29 +36,14 @@ export async function signupUser(input: SignupInput) {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .insert({
-      full_name: fullName,
-      email: normalizedEmail,
-      preferred_currency: "NGN",
-    })
-    .select("id, email, full_name, preferred_currency, created_at")
-    .single();
+  const { data: profile, error: createError } = await supabase.rpc("create_user", {
+    p_full_name: fullName,
+    p_email: normalizedEmail,
+    p_password_hash: passwordHash,
+  });
 
-  if (profileError) {
-    throw new Error(profileError.message);
-  }
-
-  const { error: credentialError } = await supabase
-    .from("auth_credentials")
-    .insert({
-      user_id: profile.id,
-      password_hash: passwordHash,
-    });
-
-  if (credentialError) {
-    throw new Error(credentialError.message);
+  if (createError) {
+    throw new Error(createError.message);
   }
 
   const token = jwt.sign(
