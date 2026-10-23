@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { login, signup } from "../../services/auth.service";
 import { AuthForm } from "./AuthForm";
 import { LeftPanel } from "./leftPanel";
@@ -13,6 +13,7 @@ type AuthMode = "login" | "signup";
 export default function Auth() {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
 
   const [mode, setMode] = useState<AuthMode>("login");
   const [fullName, setFullName] = useState("");
@@ -39,6 +40,9 @@ export default function Auth() {
       if (!isLogin) {
         sessionStorage.setItem(CURRENCY_PROMPT_STORAGE_KEY, "1");
       }
+      // Forget any "logged out" answers cached before this login, otherwise
+      // RequireAuth would see the old 401 and bounce us back here.
+      queryClient.clear();
       navigate("/dashboard");
     },
     onError: (error) => {

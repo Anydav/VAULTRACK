@@ -12,6 +12,7 @@ import AddAssetModal from "./components/addAsset/addAssetModel";
 import { ToastProvider } from "./context/toastContext";
 import AssetsList from './pages/Assets/assetsList'
 import AssetDetail from "./pages/Assets/assetDetail";
+import { RequireAuth } from "./components/auth/RequireAuth";
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-8">{title} - Placeholder</div>
@@ -25,14 +26,16 @@ export default function App() {
         <Route path="/" element={<Navigate to="/auth" replace />} />
         <Route path="/auth" element={<Auth />} />
 
-        <Route element={<MainLayout />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="portfolio" element={<Portfolio />} />
-          <Route path="accounts/:accountId" element={<AccountDetail />} />
-          <Route path="assets" element={<AssetsList />} />
-          <Route path="assets/:assetId" element={<AssetDetail />} />
-          <Route path="history" element={<History />} />
-          <Route path="Analysis" element={<Analysis />} />
+        <Route element={<RequireAuth />}>
+          <Route element={<MainLayout />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="portfolio" element={<Portfolio />} />
+            <Route path="accounts/:accountId" element={<AccountDetail />} />
+            <Route path="assets" element={<AssetsList />} />
+            <Route path="assets/:assetId" element={<AssetDetail />} />
+            <Route path="history" element={<History />} />
+            <Route path="Analysis" element={<Analysis />} />
+          </Route>
         </Route>
       </Routes>
 
