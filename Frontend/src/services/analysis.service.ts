@@ -37,17 +37,27 @@ export class PortfolioAIError extends Error {
   }
 }
 
+// The backend allows the AI service up to 100s and Vercel cuts at 120s, so
+// wait a little longer than both instead of the app-wide 45s.
+const ASK_TIMEOUT_MS = 125000;
+
 export async function askPortfolioAI(
   userId: string,
   question: string
 ): Promise<AskPortfolioAIResponse> {
   try {
-    const response = await api.post("/analysis/ask", { userId, question });
+    const response = await api.post(
+      "/analysis/ask",
+      { userId, question },
+      { timeout: ASK_TIMEOUT_MS }
+    );
     return response.data;
   } catch (error: any) {
     const status = error?.response?.status ?? 0;
     const message =
-      error?.response?.data?.error ?? "Something went wrong. Please try again.";
+      error?.code === "ECONNABORTED"
+        ? "The analysis took too long. Please try again."
+        : error?.response?.data?.error ?? "Something went wrong. Please try again.";
     throw new PortfolioAIError(message, status);
   }
 }

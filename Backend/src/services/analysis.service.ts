@@ -63,7 +63,9 @@ export async function getPortfolioAnalysis(
   console.log("[analysis.service] Sending to Flask:", JSON.stringify(holdings, null, 2));
 
   const exit = new AbortController();
-  const timeoutId = setTimeout(() => exit.abort(), 120000); // 120 seconds timeout
+  // Vercel cuts proxied requests at 120s; give up on Flask well before that so
+  // our own timeout message reaches the user instead of Vercel's error.
+  const timeoutId = setTimeout(() => exit.abort(), 100000); // 100 seconds
 
   try {
     const response = await fetch(`${FLASK_URL}/analyze`, {
