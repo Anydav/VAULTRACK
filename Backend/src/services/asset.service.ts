@@ -40,7 +40,7 @@ async function attachDisplayPrices(assets: any[], userId: string) {
   );
 }
 export async function searchAssets(input: SearchAssetInput, userId: string) {
-  const { market, query } = input;
+  const { market, query, allCoins = false } = input;
 
   const normalizedMarket = market.toUpperCase().trim();
   const normalizedQuery = (query ?? "").trim();
@@ -69,19 +69,24 @@ export async function searchAssets(input: SearchAssetInput, userId: string) {
   if (localError) {
     throw new Error(localError.message);
   }
- if (localAssets && localAssets.length > 0) {
-    return await attachDisplayPrices(localAssets, userId);
+  const localResults = localAssets ?? [];
+
+  // Normal searches stay local-only so they're instant. "Search all coins"
+  // (allCoins) also asks CoinGecko, so coins that share letters with a saved
+  // one (ETHFI when ETH is saved) can still be found.
+  if (localResults.length > 0 && !allCoins) {
+    return await attachDisplayPrices(localResults, userId);
   }
   // The CoinGecko discovery fallback only makes sense for an actual
   // search term — an empty browse query with no local rows just means
   // there's nothing to show yet.
   if (!normalizedQuery || normalizedMarket !== "CRYPTO") {
-    return [];
+    return await attachDisplayPrices(localResults, userId);
   }
   const data = await searchCryptoAssetsFromCoinGecko(normalizedQuery);
 
   if (data.length === 0) {
-    return [];
+    return await attachDisplayPrices(localResults, userId);
   }
 
   const assetsToInsert = data.map((asset) => ({
@@ -93,10 +98,12 @@ export async function searchAssets(input: SearchAssetInput, userId: string) {
     external_id: asset.externalId,
   }));
 
+  // Keyed on the CoinGecko id, not the symbol: many coins share a symbol
+  // (PEPE, ETH, ...), and keying on symbol made them overwrite each other.
   const { data: savedAssets, error: insertError } = await supabase
     .from("assets")
     .upsert(assetsToInsert, {
-      onConflict: "symbol,market",
+      onConflict: "market,external_id",
     })
     .select(
       "id, symbol, name, asset_type, market, currency, external_id, asset_prices ( price, currency, price_time )"
@@ -110,19 +117,28 @@ export async function searchAssets(input: SearchAssetInput, userId: string) {
   // this search response (and any immediate re-fetch) has real prices.
   await syncCryptoPricesIfStale(0);
 
+  // Local matches first, then newly found coins; a coin in both shows once.
+  const resultIds = [
+    ...new Set([...localResults, ...savedAssets].map((asset) => asset.id)),
+  ];
+
   const { data: pricedAssets, error: pricedError } = await supabase
     .from("assets")
     .select(
       "id, symbol, name, asset_type, market, currency, external_id, asset_prices ( price, currency, price_time )"
     )
-    .in(
-      "id",
-      savedAssets.map((asset) => asset.id)
-    );
+    .in("id", resultIds);
 
   if (pricedError) {
     throw new Error(pricedError.message);
   }
 
-  return await attachDisplayPrices(pricedAssets, userId);
+  // The database doesn't return rows in the order we asked, so put them
+  // back in order: local first.
+  const assetsById = new Map(pricedAssets.map((asset) => [asset.id, asset]));
+  const orderedAssets = resultIds
+    .map((id) => assetsById.get(id))
+    .filter((asset) => asset !== undefined);
+
+  return await attachDisplayPrices(orderedAssets, userId);
 }

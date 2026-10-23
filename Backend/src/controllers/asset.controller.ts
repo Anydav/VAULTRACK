@@ -12,6 +12,7 @@ export async function searchAssetsController(req: Request, res: Response) {
 
     const market = req.query.market as string;
     const query = (req.query.query as string) ?? "";
+    const allCoins = req.query.allCoins === "true";
 
     if (!market) {
       return res.status(400).json({
@@ -24,6 +25,7 @@ export async function searchAssetsController(req: Request, res: Response) {
       {
         market,
         query,
+        allCoins,
       },
       req.user.userId
     );

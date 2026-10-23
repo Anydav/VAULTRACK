@@ -16,9 +16,9 @@ function interleave(a: Asset[], b: Asset[]): Asset[] {
   return result;
 }
 
-async function fetchMixedAssets(query: string): Promise<Asset[]> {
+async function fetchMixedAssets(query: string, allCoins: boolean): Promise<Asset[]> {
   const [cryptoResult, ngxResult] = await Promise.allSettled([
-    searchAssets(query, "CRYPTO"),
+    searchAssets(query, "CRYPTO", allCoins),
     searchAssets(query, "NGX"),
   ]);
 
@@ -31,12 +31,18 @@ async function fetchMixedAssets(query: string): Promise<Asset[]> {
   const cryptoAssets = cryptoResult.status === "fulfilled" ? cryptoResult.value : [];
   const ngxAssets = ngxResult.status === "fulfilled" ? ngxResult.value : [];
 
-  return interleave(cryptoAssets, ngxAssets).slice(0, 10);
+  const mixed = interleave(cryptoAssets, ngxAssets);
+  // "Search all coins" can find more than 10, so show them all (the list scrolls).
+  return allCoins ? mixed : mixed.slice(0, 10);
 }
 
 export default function SelectAssetStep() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  // Which search text "Search all coins" was clicked for. Typing something
+  // new no longer matches it, so search goes back to fast/local by itself.
+  const [allCoinsQuery, setAllCoinsQuery] = useState<string | null>(null);
+  const searchAllCoins = allCoinsQuery === debouncedQuery;
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedQuery(query.trim()), 300);
@@ -49,8 +55,8 @@ export default function SelectAssetStep() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ["asset-search", debouncedQuery],
-    queryFn: () => fetchMixedAssets(debouncedQuery),
+    queryKey: ["asset-search", debouncedQuery, searchAllCoins],
+    queryFn: () => fetchMixedAssets(debouncedQuery, searchAllCoins),
   });
 
   const { setSelectedAsset, goToStep } = useAddAssetModal();
@@ -132,6 +138,17 @@ export default function SelectAssetStep() {
           ))
         )}
       </div>
+
+      {!isBrowsing && !isFetching && !isError && !searchAllCoins && (
+        <button
+          type="button"
+          onClick={() => setAllCoinsQuery(debouncedQuery)}
+          className="w-full py-1 text-center text-xs text-gray-400 hover:text-text"
+        >
+          Not seeing your coin?{" "}
+          <span className="font-semibold underline">Search all coins</span>
+        </button>
+      )}
     </div>
   );
 }
