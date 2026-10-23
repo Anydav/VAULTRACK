@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`
+// Requests go to our own site; Vercel (prod) or Vite (dev) forwards them to
+// the backend. Keeps the login cookie first-party, which Safari requires.
+const baseURL = '/api'
 
 const api = axios.create({
   baseURL,
