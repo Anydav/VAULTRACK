@@ -20,3 +20,19 @@ export const analysisRateLimiter = rateLimit({
     error: "Too many analysis requests. Please wait a moment and try again.",
   },
 });
+
+// Login: each email gets 5 failed attempts per 15 minutes.
+// Successful logins aren't counted, so normal users never notice it.
+export const loginRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  skipSuccessfulRequests: true,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  keyGenerator: (req: Request) =>
+    String(req.body?.email ?? "").toLowerCase().trim(),
+  message: {
+    success: false,
+    message: "Too many failed login attempts. Please wait 15 minutes and try again.",
+  },
+});
