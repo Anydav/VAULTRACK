@@ -69,11 +69,14 @@ export async function signupController(req: Request, res: Response) {
     const message =
       error instanceof Error ? error.message : "Something went wrong";
 
-    const status = message === "Email already exists" ? 409 : 500;
+    if (message === "Email already exists") {
+      return res.status(409).json({ success: false, message });
+    }
 
-    return res.status(status).json({
+    console.error("[auth] Signup failed:", error);
+    return res.status(500).json({
       success: false,
-      message,
+      message: "Something went wrong. Please try again.",
     });
   }
 }
@@ -111,9 +114,15 @@ return res.status(200).json({
     const message =
       error instanceof Error ? error.message : "Something went wrong";
 
-    return res.status(401).json({
+    // Only a wrong email/password is meant for the user; anything else is internal.
+    if (message === "Invalid email or password") {
+      return res.status(401).json({ success: false, message });
+    }
+
+    console.error("[auth] Login failed:", error);
+    return res.status(500).json({
       success: false,
-      message,
+      message: "Something went wrong. Please try again.",
     });
   }
 }
