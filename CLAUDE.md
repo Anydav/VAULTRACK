@@ -7,7 +7,7 @@ Portfolio tracker (crypto + NGX, 10 currencies, AI analysis). Repo: github.com/A
 - The existing docs describe **v1** (the built MVP).
 - We are now building **v2**. Don't assume the v1 docs describe how v2 should work.
 - v2 scope (committed features, optional features, out of scope, open decisions) lives in `docs/V2_PLAN.md`. Keep v2 docs in this repo's `docs/` folder, not in Claude Docs/artifacts.
-- v2 committed features: native mobile app (not a PWA), CSV import, automatic exchange sync, cash and savings.
+- v2 committed features: transactions model, edit/delete, mobile responsiveness (web app on phones). Native app, CSV import, cash and savings and exchange sync are out of v2.
 - **No new AI features in v2** — AI work is fixes only.
 
 ## Working rules

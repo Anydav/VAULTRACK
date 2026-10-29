@@ -1,13 +1,13 @@
 # VAULTRACK v2 Plan
 
-_As of 2026-10-17_
+_As of 2026-10-29_
 
 ## Overview
 
-v2 takes VAULTRACK from a web MVP to a native mobile app that fills itself: CSV import, automatic exchange sync, and cash and savings alongside crypto and NGX stocks.
+v2 makes the VAULTRACK web app solid and usable on phones, and moves holdings onto a transactions model that later features (CSV import, exchange sync, cash and savings) build on.
 
 - **v1** is the built MVP (web app, Node backend, Flask AI service). The other docs in this folder describe v1.
-- **v2** adds the four features below and fixes what the v1 review found. The AI gets fixes only.
+- **v2** fixes what the v1 review found, adds the transactions model with edit/delete, and makes the web app work on phone screens. The AI gets fixes only.
 - **Tasks** are tracked in the main [Tasks](https://app.notion.com/p/b9fe1795a15b4711b8f737861441528c) database in Notion, filtered to Project = VAULTRACK. This doc holds scope; Notion holds the work.
 
 ## Milestones
@@ -18,21 +18,27 @@ v2 ships **Fri 30 Oct 2026**. All bugs are fixed before any feature work starts.
 | --- | --- |
 | Sun 18 – Wed 21 Oct | **Bugs:** fix all 11; app works on Chrome and Safari |
 | Thu 22 – Sat 24 Oct | **Groundwork:** migrations in repo, transactions model, edit/delete |
-| Sun 25 – Thu 29 Oct | **Features:** mobile login + cash and savings, basic mobile app, CSV import |
+| Sun 25 – Thu 29 Oct | **Features:** mobile responsiveness (web app on phone screens) |
 | Fri 30 Oct | Final testing and release |
 
-The schedule has no spare days. If something overruns, CSV import slips first.
+The schedule has no spare days. CSV import and cash and savings were cut from v2 on 29 Oct (see "Moved out of v2").
 
 ## Committed features
 
-These four are the v2 scope. Exchange sync moves **after 30 Oct** (one person, 13 days); CSV import covers getting trades in until then. The mobile app ships as a basic version: login, dashboard and holdings, read-only.
-
 | # | Feature | What it means | Depends on |
 | --- | --- | --- | --- |
-| 1 | Native mobile app | A real iOS/Android app, not a PWA, using the same backend API. | Login working off-browser (cookie auth today), edit/delete endpoints |
-| 2 | CSV import | Upload a CSV of holdings or transactions and map its columns into VAULTRACK. | Transactions model |
-| 3 | Automatic exchange sync | Connect an exchange with a read-only API key; balances and trades pull in on a schedule. | Transactions model, encrypted key storage, scheduled jobs |
-| 4 | Cash and savings | Track cash and savings balances (any of the 10 currencies) next to crypto and NGX. | Asset model that supports non-market assets |
+| 1 | Transactions model | Buys, sells and other events are stored as transactions; holdings are calculated from them (see below). | Schema migrations in the repo |
+| 2 | Edit and delete | Edit or delete transactions and accounts; holdings update to match. | Transactions model |
+| 3 | Mobile responsiveness | The existing web app works on a real phone browser against the live site: login, dashboard, holdings, transactions. | Login working on Safari (done, PR #3) |
+
+## Moved out of v2
+
+| Feature | Decision |
+| --- | --- |
+| Native mobile app | Dropped from v2 on 25 Oct; replaced by mobile responsiveness above. |
+| CSV import | Moved to v3 on 29 Oct. |
+| Cash and savings | Moved to v3 on 29 Oct. |
+| Automatic exchange sync | Moved after 30 Oct (one person, 13 days). |
 
 ## Fixes and groundwork
 
@@ -40,8 +46,8 @@ The v1 review found 24 items: 11 bugs, 8 missing pieces, 5 chores. All are in No
 
 - **Transactions model:** CSV import and exchange sync both bring in buys and sells, so this is decided before either.
 - **Edit and delete** for holdings and accounts.
-- **Auth that works on mobile and Safari:** cross-site cookies break today; the Supabase Auth decision settles this.
-- **Schema migrations in the repo** and **scheduled jobs in the repo**, since exchange sync adds a new job.
+- **Auth that works on mobile and Safari:** fixed in PR #3 by routing the API through Vercel so the login cookie is first-party. The Supabase Auth decision is still open.
+- **Schema migrations in the repo** (with row-level security) before the transactions model. **Scheduled jobs in the repo** is in the backlog; exchange sync will need it.
 - **AI: fixes only.** Lock down the `/analyze` endpoint, fix the timeout mismatch, keep answers when the memory step fails, and show real errors.
 
 ## Transactions model (decided 2026-10-17)
@@ -60,7 +66,7 @@ Transactions are the source of truth. Holdings are calculated from them.
 
 ## Optional features
 
-Good ideas we may pick up once the committed four ship. None are scheduled.
+Good ideas we may pick up once v2 ships. None are scheduled.
 
 | Feature | What it means |
 | --- | --- |
@@ -76,7 +82,7 @@ Good ideas we may pick up once the committed four ship. None are scheduled.
 ## Out of scope
 
 - **New AI features.** No weekly AI summaries, rebalancing suggestions or extra AI context in v2.
-- **A PWA.** The mobile app is native.
+- **A native mobile app or PWA.** v2 makes the web app responsive instead.
 
 ## Open decisions
 
@@ -84,7 +90,7 @@ Each one is settled when we reach the task that needs it, not up front.
 
 - [x] Transactions model: decided, see "Transactions model" above.
 - [ ] Switch to Supabase Auth, or keep custom JWT and add token auth for mobile?
-- [ ] Mobile stack: React Native/Expo (reuses our TypeScript/React) or Flutter?
-- [ ] Which exchanges to support first (e.g. Binance, Bybit, Quidax)?
-- [ ] CSV import: our own template only, or also exchange/broker export formats?
-- [ ] Cash and savings: plain balances only, or interest rates and maturity dates too?
+- [ ] Mobile stack, if a native app comes back after v2: React Native/Expo (reuses our TypeScript/React) or Flutter?
+- [ ] Which exchanges to support first (e.g. Binance, Bybit, Quidax)? (after v2)
+- [ ] CSV import: our own template only, or also exchange/broker export formats? (v3)
+- [ ] Cash and savings: plain balances only, or interest rates and maturity dates too? (v3)
