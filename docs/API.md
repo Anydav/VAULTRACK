@@ -92,7 +92,19 @@ Labeled "Custodian" in the frontend UI. The API, database, and all backend code 
 - **Success**: `200` — `{ success: true, message: "Accounts fetched successfully", data: [...] }` (empty array if none).
 - **Errors**: `500`.
 
-No `PATCH`/`DELETE` route exists for accounts.
+### `PATCH /api/accounts/:id`
+- **Auth**: Required
+- **Body**: any of `{ name?: string, accountType?: string, currency?: string }`.
+- **Validation**: `400` if no field is given ("Nothing to update"), or if `name` or `accountType` is given but empty.
+- **Logic** (`updateAccount`): updates only the given fields, and only if the account belongs to the caller.
+- **Success**: `200` — `{ success: true, message: "Account updated successfully", data: { id, name, account_type, currency, created_at } }`.
+- **Errors**: `400` (validation), `404` ("Account not found", including someone else's account), `500`.
+
+### `DELETE /api/accounts/:id`
+- **Auth**: Required
+- **Logic** (`deleteAccount`): calls the `delete_account` database function, which deletes the account **and all its transactions** in one transaction; the holdings trigger then removes its holdings. All-or-nothing. Past snapshots are not changed. The frontend should confirm first (e.g. "Delete Binance and its 5 transactions? This can't be undone.").
+- **Success**: `200` — `{ success: true, message: "Account deleted successfully" }`.
+- **Errors**: `404` ("Account not found", including someone else's account), `500`.
 
 ---
 
@@ -171,7 +183,23 @@ Source: `routes/transaction.routes.ts`, `controllers/transaction.controller.ts`,
 - **Success**: `200` — `{ success: true, message: "Transactions fetched successfully", data: [...] }`.
 - **Errors**: `500`.
 
-No `PATCH`/`DELETE` route yet (planned under edit/delete).
+### `PATCH /api/transactions/:id`
+- **Auth**: Required
+- **Body**: any of `{ quantity?: number, pricePerUnit?: number, priceCurrency?: string, occurredAt?: string, notes?: string }`.
+- **Validation**: `400` if `type`, `accountId` or `assetId` is sent (those can't be edited: delete the transaction and add a new one), if no editable field is given, if `quantity` isn't greater than `0`, if `pricePerUnit` is negative, or if `priceCurrency` isn't supported.
+- **Logic** (`updateTransaction`):
+  1. Finds the transaction, only if it belongs to the caller.
+  2. Updates the given fields. If `priceCurrency` is the same as before, the saved `fx_rate_to_usd` is kept, so fixing a typo doesn't revalue the transaction; a different currency gets today's rate, as when adding.
+  3. The holdings trigger rebuilds the holding and rejects an edit that would leave a later sell bigger than what was held.
+- **Example**: buys of 0.3 @ $20,000 and 0.2 @ $25,000 hold 0.5 BTC @ $22,000. Editing the first buy to 0.4 gives 0.6 BTC @ $21,666.67.
+- **Success**: `200` — `{ success: true, message: "Transaction updated successfully", data: {...} }`, the updated row.
+- **Errors**: `400` (validation, or "Cannot sell X when only Y is held at that date"), `404` ("Transaction not found"), `500`.
+
+### `DELETE /api/transactions/:id`
+- **Auth**: Required
+- **Logic** (`deleteTransaction`): deletes the transaction, only if it belongs to the caller. The holdings trigger rebuilds the holding (removing it if nothing is left) and rejects the delete if a later sell needs this buy; delete or reduce the sell first.
+- **Success**: `200` — `{ success: true, message: "Transaction deleted successfully" }`.
+- **Errors**: `400` ("Cannot sell X when only Y is held at that date"), `404` ("Transaction not found"), `500`.
 
 ---
 
