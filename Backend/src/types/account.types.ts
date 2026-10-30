@@ -4,3 +4,9 @@ export interface CreateAccountInput {
   accountType: string;
   currency?: string;
 }
+
+export interface UpdateAccountInput {
+  name?: string;
+  accountType?: string;
+  currency?: string;
+}

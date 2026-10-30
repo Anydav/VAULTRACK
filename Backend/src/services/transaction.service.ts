@@ -1,5 +1,5 @@
 import { supabase } from "../config/supabase.js";
-import { CreateTransactionInput, TransactionFilters } from "../types/transaction.types.js";
+import { CreateTransactionInput, TransactionFilters, UpdateTransactionInput } from "../types/transaction.types.js";
 import { getExchangeRate, BASE_CURRENCY } from "./currency.service.js";
 
 // Records a buy or sell. The database trigger then recalculates the
@@ -49,6 +49,84 @@ export async function createTransaction(input: CreateTransactionInput) {
   }
 
   return data;
+}
+
+// Edits a transaction. The trigger then recalculates its holding and rejects
+// an edit that would leave a later sell bigger than what was held.
+export async function updateTransaction(
+  userId: string,
+  transactionId: string,
+  changes: UpdateTransactionInput
+) {
+  const { data: existing, error: findError } = await supabase
+    .from("transactions")
+    .select("*")
+    .eq("id", transactionId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (findError) {
+    throw new Error(findError.message);
+  }
+
+  if (!existing) {
+    throw new Error("Transaction not found");
+  }
+
+  const update: Record<string, unknown> = {};
+
+  if (changes.quantity !== undefined) update.quantity = changes.quantity;
+  if (changes.pricePerUnit !== undefined) update.price_per_unit = changes.pricePerUnit;
+  if (changes.occurredAt !== undefined) update.occurred_at = changes.occurredAt;
+  if (changes.notes !== undefined) update.notes = changes.notes;
+
+  // Same currency keeps the rate saved with the transaction, so fixing a typo
+  // doesn't revalue it. A new currency is converted at today's rate, as when adding.
+  if (changes.priceCurrency !== undefined) {
+    const currency = changes.priceCurrency.toUpperCase();
+
+    if (currency !== existing.price_currency) {
+      update.price_currency = currency;
+      update.fx_rate_to_usd = await getExchangeRate(currency, BASE_CURRENCY);
+    }
+  }
+
+  if (Object.keys(update).length === 0) {
+    return existing;
+  }
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .update(update)
+    .eq("id", transactionId)
+    .eq("user_id", userId)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+// Deletes a transaction. The trigger recalculates its holding and rejects the
+// delete if a later sell needs this buy.
+export async function deleteTransaction(userId: string, transactionId: string) {
+  const { data, error } = await supabase
+    .from("transactions")
+    .delete()
+    .eq("id", transactionId)
+    .eq("user_id", userId)
+    .select("id");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (data.length === 0) {
+    throw new Error("Transaction not found");
+  }
 }
 
 export async function getTransactions(userId: string, filters: TransactionFilters = {}) {

@@ -53,6 +53,8 @@ All foreign keys and unique constraints below are real database constraints.
 
 **Relationships**: `accounts.id` ← `user_assets.account_id` (on delete cascade) and ← `transactions.account_id` (no cascade). `user_assets` selects embed `accounts (id, name, account_type, currency)`.
 
+**Deleting**: through the `delete_account(p_account_id, p_user_id)` function (`20261030120000_delete_account.sql`), callable by the service role only. It returns `false` if the account doesn't exist or isn't that user's; otherwise it deletes the account's transactions in one statement, then the account, and returns `true`. One statement matters: the holdings trigger then runs once all the transactions are gone, instead of rejecting a buy deleted before the sell that needs it. The trigger removes the account's holdings.
+
 ---
 
 ## `assets`
