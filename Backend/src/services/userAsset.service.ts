@@ -1,66 +1,9 @@
 import { supabase } from "../config/supabase.js";
 import { CreateUserAssetInput } from "../types/userAsset.types.js";
-import {getUserCurrencyContext,getExchangeRate,convertCurrency,convertAmount, BASE_CURRENCY} from "./currency.service.js";
+import {getUserCurrencyContext,getExchangeRate,convertCurrency, BASE_CURRENCY} from "./currency.service.js";
+import { createTransaction } from "./transaction.service.js";
 
-
-
-export async function createUserAsset(input: CreateUserAssetInput) {
-  
-  const {
-  userId,
-  accountId,
-  assetId,
-  quantity,
-  costPrice,
-  costCurrency,
-  acquiredAt,
-} = input;
-
-const { data: account, error: accountError } = await supabase
-  .from("accounts")
-  .select("id")
-  .eq("id", accountId)
-  .eq("user_id", userId)
-  .maybeSingle();
-
-if (accountError) {
-  throw new Error(accountError.message);
-}
-
-if (!account) {
-  throw new Error("Account not found");
-}
-
-let normalizedCostPrice = costPrice;
-
-// cost_currency is always persisted as BASE_CURRENCY below, so the price
-// must actually be converted into it — even when the caller didn't send a
-// costCurrency. In that case we treat the price as already being in
-// BASE_CURRENCY (convertAmount is a no-op when currencies match) rather
-// than storing an unconverted number under a currency label that doesn't
-// necessarily match what was submitted.
-if (costPrice != null) {
-  const { amount } = await convertAmount(
-    costPrice,
-    costCurrency ?? BASE_CURRENCY,
-    BASE_CURRENCY
-  );
-  normalizedCostPrice = amount;
-}
-
-const { data, error } = await supabase
-  .from("user_assets")
-  .insert({
-    user_id: userId,
-    account_id: accountId,
-    asset_id: assetId,
-    quantity,
-    cost_price: normalizedCostPrice,
-    cost_currency: BASE_CURRENCY,
-    acquired_at: acquiredAt,
-  })
-    .select(
-      `
+const HOLDING_SELECT = `
       id,
       quantity,
       cost_price,
@@ -89,8 +32,29 @@ const { data, error } = await supabase
           price_time
         )
       )
-      `
-    )
+      `;
+
+export async function createUserAsset(input: CreateUserAssetInput) {
+  const { userId, accountId, assetId, quantity, costPrice, costCurrency, acquiredAt } = input;
+
+  // v2: adding an asset records a buy; the database trigger updates the holding.
+  // A missing cost counts as 0, as it did in v1.
+  await createTransaction({
+    userId,
+    accountId,
+    assetId,
+    type: "buy",
+    quantity,
+    pricePerUnit: costPrice ?? 0,
+    priceCurrency: costCurrency,
+    occurredAt: acquiredAt,
+  });
+
+  const { data, error } = await supabase
+    .from("user_assets")
+    .select(HOLDING_SELECT)
+    .eq("account_id", accountId)
+    .eq("asset_id", assetId)
     .single();
 
   if (error) {
@@ -116,38 +80,7 @@ export async function getUserAssets(
         })(),
     supabase
     .from("user_assets")
-    .select(
-      `
-      id,
-      quantity,
-      cost_price,
-      cost_currency,
-      acquired_at,
-      created_at,
-      accounts (
-        id,
-        name,
-        account_type,
-        currency
-      ),
-      assets (
-        id,
-        symbol,
-        name,
-        asset_type,
-        market,
-        currency,
-        external_id,
-        asset_prices (
-         id,
-         price,
-         currency,
-         source,
-         price_time
-      )
-      )
-      `
-    )
+    .select(HOLDING_SELECT)
     .eq("user_id", userId)
     .order("created_at", { ascending: false }),
   ]);

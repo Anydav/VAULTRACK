@@ -54,10 +54,11 @@ The v1 review found 24 items: 11 bugs, 8 missing pieces, 5 chores. All are in No
 
 Transactions are the source of truth. Holdings are calculated from them.
 
-- **New `transactions` table**: one row per event, with `type` (buy, sell, deposit, withdrawal, dividend, interest, fee, transfer_in, transfer_out), `quantity`, `price_per_unit` + `price_currency` (the currency actually paid), `fx_rate_to_usd` (the rate on the trade date), `fee`, `occurred_at`, `source` (manual / csv / exchange name), `external_id` (unique per account + source to block duplicates on re-import or re-sync) and `import_batch_id` (to undo a CSV import).
+- **New `transactions` table**: one row per event, with `type` (buy, sell, deposit, withdrawal, dividend, interest, transfer_in, transfer_out), `quantity`, `price_per_unit` + `price_currency` (the currency actually paid), `fx_rate_to_usd` (the rate on the trade date), `occurred_at`, `source` (manual / csv / exchange name), `external_id` (unique per account + source to block duplicates on re-import or re-sync) and `import_batch_id` (to undo a CSV import).
 - **`user_assets` becomes a derived cache**: it's recalculated for an account + asset whenever that pair's transactions change. Dashboard, snapshots and AI keep reading it as today.
 - **Base currency stays USD.** All conversions still go through USD (e.g. NGN display ↔ EUR asset goes NGN → USD → EUR). New: the original price and currency are kept on each transaction, along with the USD rate on the trade date, so a past purchase's USD cost never changes when exchange rates move.
 - **Cost basis: average cost.**
+- **No fees**: the app doesn't record trading fees (decided 2026-10-30).
 - **Cash is independent**: buys and sells don't move cash balances. Cash and savings use deposit / withdrawal / interest.
 - **Transfers between your own accounts**: a linked `transfer_out` + `transfer_in` pair that carries the cost basis over and doesn't count as new money invested.
 - **No direct quantity edits**: users edit or delete transactions, and holdings update.

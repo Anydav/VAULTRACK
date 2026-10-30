@@ -6,9 +6,13 @@ import {
   convertCurrency,
   BASE_CURRENCY,
 } from "./currency.service.js";
+import { getNetInvestedBase } from "./transaction.service.js";
 
 export async function createPortfolioSnapshot(userId: string) {
-  const summary = await getDashboardSummary(userId);
+  const [summary, netInvestedBase] = await Promise.all([
+    getDashboardSummary(userId),
+    getNetInvestedBase(userId),
+  ]);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -22,6 +26,7 @@ export async function createPortfolioSnapshot(userId: string) {
         total_portfolio_value_base: summary.totalPortfolioValueBase,
         total_cost_base: summary.totalCostBase,
         total_profit_loss_base: summary.totalProfitLossBase,
+        net_invested_base: netInvestedBase,
 
         snapshot_date: today,
       },
