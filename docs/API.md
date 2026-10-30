@@ -125,19 +125,16 @@ Source: `routes/userAsset.routes.ts`, `controllers/userAsset.controller.ts`, `se
 
 ### `POST /api/user-assets`
 - **Auth**: Required
-- **Body**: `{ accountId: string, assetId: string, quantity: number, costPrice?: number, costCurrency?: string, acquiredAt?: string }`.
-- **Validation**: `400` if `accountId`, `assetId`, or `quantity` is missing (`quantity` is checked against `undefined`/`null` specifically, so `quantity: 0` is valid).
-- **Logic** (`createUserAsset`):
-  1. Verifies the `accountId` belongs to the caller (`accounts.user_id === req.user.userId`); if not found, throws `"Account not found"` (surfaces as `500`, not `404`).
-  2. If `costPrice` is given, converts it into the app's base currency (`USD`) via `convertAmount`, using the submitted `costCurrency` if present, or assuming it's already in `USD` if not (`convertAmount` is a no-op when the two currencies match, so this doesn't distort an already-base-currency price).
-  3. Inserts into `user_assets` with `cost_currency` always written as the base currency (`USD`), which is now accurate since the price is always converted (or already in that currency) before storage.
-  4. No pre-insert check that `assetId` actually exists in `assets` — relies entirely on whatever foreign-key constraint (if any) exists in the database, which cannot be confirmed from this code.
-- **Success**: `201` — `{ success: true, message: "Asset added to portfolio successfully", data: {...} }`, the new row joined with its `accounts` and `assets` (+ `asset_prices`) data.
+- **Body**: `{ accountId: string, assetId: string, quantity: number, costPrice?: number, costCurrency?: string, acquiredAt?: string }`. `costPrice` is per unit, in `costCurrency` (default `USD`).
+- **Validation**: `400` if `accountId`, `assetId`, or `quantity` is missing, or if `quantity` isn't greater than `0`.
+- **Logic** (`createUserAsset`): records a `buy` transaction through `createTransaction` (see `POST /api/transactions`), with `pricePerUnit = costPrice` (or `0` if no cost is given, as in v1) and `occurredAt = acquiredAt`. A database trigger then recalculates the holding for that account + asset, and the endpoint returns it.
+- **Success**: `201` — `{ success: true, message: "Asset added to portfolio successfully", data: {...} }`: the holding for that account + asset, joined with its `accounts` and `assets` (+ `asset_prices`) data. If the account already held the asset, this is the combined holding (e.g. 0.3 BTC held + 0.2 added returns 0.5 BTC at the average cost), not a new row.
 - **Errors**: `400` (validation), `500` (including the "Account not found" case).
 
 ### `GET /api/user-assets`
 - **Auth**: Required
 - **Purpose**: Lists the caller's holdings, each enriched with a `valuation` object.
+- **Source of the numbers**: `user_assets` is rebuilt from the caller's transactions, one row per account + asset. `quantity` is buys minus sells, and `cost_price` is the average cost per unit in USD.
 - **Logic** (`getUserAssets`): joins `user_assets` → `accounts` and `assets` (+`asset_prices`), ordered by `created_at` descending. For each holding computes:
   - `currentValueBase = quantity × latestPrice` (from the asset's single cached price row — not any historical price near acquisition)
   - `totalCostBase = quantity × cost_price`
@@ -147,7 +144,34 @@ Source: `routes/userAsset.routes.ts`, `controllers/userAsset.controller.ts`, `se
 - **Success**: `200` — `{ success: true, message: "User assets fetched successfully", data: [...] }`.
 - **Errors**: `500`.
 
-No `PATCH`/`DELETE` route exists for holdings.
+No `PATCH`/`DELETE` route exists for holdings. Holdings change only through transactions.
+
+---
+
+## Transactions (`/api/transactions`)
+
+Source: `routes/transaction.routes.ts`, `controllers/transaction.controller.ts`, `services/transaction.service.ts`.
+
+### `POST /api/transactions`
+- **Auth**: Required
+- **Body**: `{ accountId: string, assetId: string, type: "buy" | "sell", quantity: number, pricePerUnit: number, priceCurrency?: string, occurredAt?: string, notes?: string }`. `priceCurrency` defaults to `USD`; `occurredAt` defaults to now.
+- **Validation**: `400` if `accountId` or `assetId` is missing, `type` isn't `buy` or `sell`, `quantity` isn't greater than `0`, `pricePerUnit` is missing or negative, or `priceCurrency` isn't one of the supported currencies.
+- **Logic** (`createTransaction`):
+  1. Verifies the account belongs to the caller.
+  2. Saves the price in the currency paid, plus `fx_rate_to_usd`, so the transaction's USD cost never changes later. The rate is **today's** cached rate even when `occurredAt` is in the past, because only the latest rates are stored.
+  3. Inserts the transaction. A database trigger recalculates the holding: it removes the holding if everything is sold, and rejects a sell bigger than what was held at that date.
+- **Example**: holding 1.0 BTC at an average of $27,500, selling 0.4 leaves 0.6 BTC at $27,500 (selling doesn't change the average cost).
+- **Success**: `201` — `{ success: true, message: "Transaction recorded successfully", data: {...} }`, the saved transaction row.
+- **Errors**: `400` (validation, "Account not found", or "Cannot sell X when only Y is held at that date"), `500`.
+
+### `GET /api/transactions`
+- **Auth**: Required
+- **Query**: `accountId?`, `assetId?` to filter.
+- **Logic** (`getTransactions`): the caller's transactions, newest `occurred_at` first, each joined with its account (`id`, `name`) and asset (`id`, `symbol`, `name`, `market`).
+- **Success**: `200` — `{ success: true, message: "Transactions fetched successfully", data: [...] }`.
+- **Errors**: `500`.
+
+No `PATCH`/`DELETE` route yet (planned under edit/delete).
 
 ---
 
@@ -184,7 +208,7 @@ Source: `routes/snapshot.routes.ts`, `controllers/snapshot.controller.ts`, `serv
 ### `POST /api/snapshots`
 - **Auth**: Required
 - **Purpose**: Manually creates/overwrites **today's** snapshot for the caller (the same function the `snapshot:daily` script calls per-user).
-- **Logic**: computes `getDashboardSummary`-equivalent totals in base currency, `upsert`s into `portfolio_snapshots` on `(user_id, snapshot_date)` — safe to call repeatedly the same day.
+- **Logic**: computes `getDashboardSummary`-equivalent totals in base currency, plus `net_invested_base` (what the caller's buys cost minus what their sells brought in, in USD), and `upsert`s into `portfolio_snapshots` on `(user_id, snapshot_date)` — safe to call repeatedly the same day.
 - **Success**: `201` — `{ success: true, message: "Portfolio snapshot created successfully", data: {...} }`.
 - **Errors**: `500`.
 

@@ -98,18 +98,20 @@ All foreign keys and unique constraints below are real database constraints.
 
 **Purpose**: A user's holding of a specific asset inside a specific account. Referred to as "holdings" in application code/comments.
 
+Since v2 this is a **cache rebuilt from `transactions`**: the `recalculate_holding` database function rewrites the row whenever one of that account + asset's transactions is added, edited or deleted. Application code never writes it directly. There is at most one row per account + asset (`user_assets_account_asset_unique`), and a fully sold holding has no row.
+
 | Column | Notes |
 |---|---|
 | `id` | Primary key. |
 | `user_id` | FK to `profiles.id`, on delete cascade. |
 | `account_id` | FK to `accounts.id`, on delete cascade. Ownership of the account is checked in application code before insert, but not re-validated on read. |
 | `asset_id` | FK to `assets.id`, on delete cascade. No application-level existence check before insert; the FK rejects unknown assets. |
-| `quantity` | Numeric, must be `>= 0` (`user_assets_quantity_check`). `0` is an explicitly valid value per controller validation. |
-| `cost_price` | Nullable, must be `>= 0` (`user_assets_cost_price_check`). If provided with a `costCurrency`, converted into base currency before storage; if provided **without** a `costCurrency`, stored as-is with no conversion. |
-| `cost_currency` | Always written as the app's base currency (`USD`) by `createUserAsset` — `cost_price` is always converted into that currency first (assumed already-`USD` if the client didn't submit a `costCurrency`), so the label is accurate. See `API.md` for detail. |
-| `acquired_at` | Nullable, optional at creation; defaults to `now()`. |
+| `quantity` | Numeric, `>= 0`. Buys minus sells. Always `> 0` in practice, because a fully sold holding is removed. |
+| `cost_price` | Average cost per unit in USD: the total USD cost of what's held ÷ `quantity`. A sell removes its share of cost, so it doesn't change the average. |
+| `cost_currency` | Always `USD`. |
+| `acquired_at` | Date of the first buy since the holding was last fully sold. |
 | `created_at` | Used for `order("created_at", { ascending: false })`. |
-| `updated_at` | Defaults to `now()`. No trigger, so it doesn't change on update. |
+| `updated_at` | Set by `recalculate_holding` on every rebuild. |
 
 ---
 
@@ -141,6 +143,7 @@ All foreign keys and unique constraints below are real database constraints.
 | `total_portfolio_value_base` | Numeric. |
 | `total_cost_base` | Numeric. |
 | `total_profit_loss_base` | Numeric. |
+| `net_invested_base` | Numeric, nullable. What the user's buys cost minus what their sells brought in, in USD, so charts can separate money put in from market growth. Empty for snapshots taken before v2. |
 | `snapshot_date` | Date (`YYYY-MM-DD`, derived from `new Date().toISOString().split("T")[0]` — i.e. **UTC date**, not the user's local date). |
 
 **Unique constraint**: `(user_id, snapshot_date)` (`unique_user_snapshot`) — re-running a snapshot for the same user on the same UTC day overwrites the existing row rather than duplicating it.
@@ -178,9 +181,31 @@ All foreign keys and unique constraints below are real database constraints.
 
 ## `transactions`
 
-Created in v1 but not used by any code yet (0 rows on 2026-10-29). Columns: `user_id`, `account_id`,
-`asset_id` (nullable), `transaction_type`, `quantity`, `price_per_unit`, `currency`, `total_amount`,
-`transaction_date`, `notes`. It will be reshaped to the v2 transactions model (see `docs/V2_PLAN.md`).
+**Purpose**: One row per buy or sell. The source of truth for holdings (see `user_assets`).
+
+| Column | Notes |
+|---|---|
+| `user_id` | FK to `profiles.id` (no cascade). |
+| `account_id` | FK to `accounts.id` (no cascade). |
+| `asset_id` | FK to `assets.id`. Required for `buy`, `sell`, `transfer_in`, `transfer_out`. |
+| `type` | One of `buy`, `sell`, `deposit`, `withdrawal`, `dividend`, `interest`, `transfer_in`, `transfer_out`. Only `buy` and `sell` are created by the app today. |
+| `quantity` | Numeric, `> 0` for buys, sells and transfers. |
+| `price_per_unit` | Numeric, `>= 0`, in `price_currency`. |
+| `price_currency` | The currency actually paid, e.g. `NGN`. |
+| `fx_rate_to_usd` | `> 0`. USD per 1 unit of `price_currency`, saved when the transaction is recorded. USD cost = `quantity × price_per_unit × fx_rate_to_usd`. |
+| `occurred_at` | When the trade happened. Holdings are rebuilt in this order. |
+| `source` | `manual` (default); later `csv` or an exchange name. |
+| `external_id` | Nullable. Unique per `(account_id, source, external_id)` to block duplicate imports. Unused today. |
+| `import_batch_id` | Nullable. Groups a CSV import so it can be undone. Unused today. |
+| `transfer_id` | Nullable. Links the two halves of a transfer. Unused today. |
+| `notes` | Free text. Holdings migrated from v1 say `Migrated from v1 holding <id>`. |
+| `created_at`, `updated_at` | `updated_at` is kept current by `trg_transactions_updated_at`. |
+
+**Trigger**: `trg_transactions_recalculate_holding` calls `recalculate_holding(account_id, asset_id)` after every insert, update or delete, for both the old and new pair if an edit moves a transaction. If the rebuild finds a sell bigger than what was held at that date, it raises "Cannot sell …" and the change is rejected.
+
+**No fees**: the app doesn't record trading fees.
+
+**Migration from v1** (`20261030000000_transactions_model.sql`): each v1 `user_assets` row became one `buy` in USD, and duplicate rows for the same account + asset were merged, keeping the oldest row's id. The v1 rows are kept in `user_assets_v1_backup`, which has RLS on; drop it once v2 is settled.
 
 ---
 
@@ -199,6 +224,7 @@ profiles ──1───* accounts ──1───* transactions (also linked 
    │                │ (account_id)
    │                ▼
    ├──1───* user_assets ────*───1 assets ────1───1 asset_prices
+   │        (rebuilt from transactions; unique per account_id + asset_id)
    │                                 (asset_id)      (unique per asset_id)
    │
    ├──1───* portfolio_snapshots   (unique per user_id + snapshot_date)

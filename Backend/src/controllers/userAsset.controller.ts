@@ -20,6 +20,13 @@ export async function createUserAssetController(req: Request, res: Response) {
       });
     }
 
+    if (!(Number(quantity) > 0)) {
+      return res.status(400).json({
+        success: false,
+        message: "Quantity must be greater than 0",
+      });
+    }
+
     const userAsset = await createUserAsset({
       userId: req.user.userId,
       accountId,
