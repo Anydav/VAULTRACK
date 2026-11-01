@@ -69,6 +69,7 @@ export default function HoldingTable() {
     {
       key: "value",
       header: "Value",
+      mobile: "value",
       align: "right",
       render: (holding) =>
         formatCurrency(

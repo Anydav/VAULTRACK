@@ -58,6 +58,7 @@ export default function SnapshotTable() {
     {
       key: "value",
       header: "Portfolio Value",
+      mobile: "value",
       align: "right",
       render: (row) =>
         formatCurrency(row.total_portfolio_value_display, row.display_currency),

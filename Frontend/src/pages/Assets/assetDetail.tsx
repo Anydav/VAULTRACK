@@ -158,6 +158,7 @@ export default function AssetDetail() {
     {
       key: "value",
       header: "Value",
+      mobile: "value",
       align: "right",
       render: (h) => formatCurrency(h.valuation.currentValueDisplay, h.valuation.displayCurrency),
     },

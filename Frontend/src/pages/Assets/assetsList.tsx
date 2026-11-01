@@ -70,6 +70,7 @@ export default function AssetsList() {
     {
       key: "value",
       header: "Value",
+      mobile: "value",
       align: "right",
       render: (holding) =>
         formatCurrency(
