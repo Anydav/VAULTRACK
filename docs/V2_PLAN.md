@@ -1,6 +1,6 @@
 # VAULTRACK v2 Plan
 
-_As of 2026-10-29_
+_As of 2026-11-01_
 
 ## Overview
 
@@ -28,7 +28,7 @@ The schedule has no spare days. CSV import and cash and savings were cut from v2
 | # | Feature | What it means | Depends on |
 | --- | --- | --- | --- |
 | 1 | Transactions model | Buys, sells and other events are stored as transactions; holdings are calculated from them (see below). | Schema migrations in the repo |
-| 2 | Edit and delete | Edit or delete transactions and accounts; holdings update to match. | Transactions model |
+| 2 | Edit, sell and remove | Edit accounts; record sells; remove accounts and transactions without erasing them. A History page lists every transaction. Holdings update to match (see "Edit, sell and remove" below). | Transactions model |
 | 3 | Mobile responsiveness | The existing web app works on a real phone browser against the live site: login, dashboard, holdings, transactions. | Login working on Safari (done, PR #3) |
 
 ## Moved out of v2
@@ -45,7 +45,7 @@ The schedule has no spare days. CSV import and cash and savings were cut from v2
 The v1 review found 24 items: 11 bugs, 8 missing pieces, 5 chores. All are in Notion; these are the ones the features above need first.
 
 - **Transactions model:** CSV import and exchange sync both bring in buys and sells, so this is decided before either.
-- **Edit and delete** for holdings and accounts.
+- **Edit, sell and remove** for accounts and transactions.
 - **Auth that works on mobile and Safari:** fixed in PR #3 by routing the API through Vercel so the login cookie is first-party. The Supabase Auth decision is still open.
 - **Schema migrations in the repo** (with row-level security) before the transactions model. **Scheduled jobs in the repo** is in the backlog; exchange sync will need it.
 - **AI: fixes only.** Lock down the `/analyze` endpoint, fix the timeout mismatch, keep answers when the memory step fails, and show real errors.
@@ -61,9 +61,45 @@ Transactions are the source of truth. Holdings are calculated from them.
 - **No fees**: the app doesn't record trading fees (decided 2026-10-30).
 - **Cash is independent**: buys and sells don't move cash balances. Cash and savings use deposit / withdrawal / interest.
 - **Transfers between your own accounts**: a linked `transfer_out` + `transfer_in` pair that carries the cost basis over and doesn't count as new money invested.
-- **No direct quantity edits**: users edit or delete transactions, and holdings update.
+- **No direct quantity edits**: users add, sell or remove transactions, and holdings update. Transactions can't be edited (changed 2026-11-01, see below).
 - **Deposits vs market growth**: add `net_invested_base` to `portfolio_snapshots`.
 - **Migration**: each existing `user_assets` row becomes one `buy` transaction (recorded in USD, since v1 didn't keep the original currency).
+
+## Edit, sell and remove (decided 2026-11-01)
+
+Nothing is erased. Removing marks a row as removed, so the History page can still show it. This replaces the delete behaviour merged in PR #12.
+
+| | Add | Edit | Sell | Remove |
+| --- | --- | --- | --- | --- |
+| Custodian (account) | Yes | Name, type, currency | – | Yes, marked removed |
+| Transaction | Yes (buy) | No | Yes | Yes, marked removed |
+
+- **Sell vs remove.** Sell records a real sale: the trade happened and you got money for it (partial sells allowed, profit and net invested stay correct). Remove means "this never happened": use it only to undo a transaction entered by mistake. To fix a typo, remove the wrong transaction and add the right one.
+- **Removing a custodian** takes it and its holdings out of the Dashboard, Portfolio, sidebar and totals. Its transactions are kept and still appear in History.
+- **History page** reads from `transactions` (joined to `accounts` and `assets`), including removed rows. It only lists transactions; account changes (create, rename, remove) are not recorded. Account names are always the current name. The snapshot table stays below it.
+  ```
+  Date    Type  Asset  Qty  Price      Custodian
+  2 Nov   Sell  BTC    0.2  $30,000    Binance (removed)
+  31 Oct  Buy   BTC    0.3  $20,000    Binance (removed)
+  29 Oct  Buy   ETH    0.5  $2,400     Bybit        Removed
+  ```
+  "(removed)" after a custodian = the account was removed. "Removed" on a row = that transaction was removed.
+
+**Backend changes**
+1. Migration: add `removed_at` to `accounts` and `transactions`.
+2. The holdings calculation skips removed transactions and transactions on removed accounts.
+3. Removing an account sets `removed_at` and clears its holdings (`delete_account` stops deleting rows).
+4. Removing a transaction sets `removed_at` (the same "a later sell needs this buy" check still applies).
+5. Drop `PATCH /api/transactions/:id`.
+6. `GET /api/accounts` returns only active accounts; new transactions on a removed account are refused. `GET /api/transactions` includes removed rows, flagged.
+
+**Frontend changes**
+- Custodian page: Edit and Remove custodian; a Sell button on each holding; a transactions list with Remove on each row.
+- History page: all transactions above the existing snapshot table.
+- **The UI must say when to use Sell and when to use Remove:**
+  - Sell form, under the title: "Record a sale you made. This counts toward your profit."
+  - Remove transaction confirmation: "Only remove a transaction you entered by mistake. It will be treated as if it never happened. If you sold this asset, use Sell instead." with buttons "Remove" and "Record a sale instead" (opens the Sell form).
+  - Remove custodian confirmation: "Remove Binance? Its holdings leave your portfolio and totals. Its 5 transactions stay in History."
 
 ## Optional features
 

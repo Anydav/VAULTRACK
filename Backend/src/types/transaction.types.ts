@@ -12,14 +12,6 @@ export interface CreateTransactionInput {
   notes?: string;
 }
 
-export interface UpdateTransactionInput {
-  quantity?: number;
-  pricePerUnit?: number;
-  priceCurrency?: string;
-  occurredAt?: string;
-  notes?: string;
-}
-
 export interface TransactionFilters {
   accountId?: string;
   assetId?: string;

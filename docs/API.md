@@ -88,7 +88,7 @@ Labeled "Custodian" in the frontend UI. The API, database, and all backend code 
 ### `GET /api/accounts`
 - **Auth**: Required
 - **Purpose**: Lists the caller's own accounts.
-- **Logic**: `accounts` filtered by `user_id`, ordered by `created_at` descending.
+- **Logic**: `accounts` filtered by `user_id`, active only (`removed_at` empty), ordered by `created_at` descending.
 - **Success**: `200` — `{ success: true, message: "Accounts fetched successfully", data: [...] }` (empty array if none).
 - **Errors**: `500`.
 
@@ -96,15 +96,15 @@ Labeled "Custodian" in the frontend UI. The API, database, and all backend code 
 - **Auth**: Required
 - **Body**: any of `{ name?: string, accountType?: string, currency?: string }`.
 - **Validation**: `400` if no field is given ("Nothing to update"), or if `name` or `accountType` is given but empty.
-- **Logic** (`updateAccount`): updates only the given fields, and only if the account belongs to the caller.
+- **Logic** (`updateAccount`): updates only the given fields, and only if the account belongs to the caller and isn't removed.
 - **Success**: `200` — `{ success: true, message: "Account updated successfully", data: { id, name, account_type, currency, created_at } }`.
-- **Errors**: `400` (validation), `404` ("Account not found", including someone else's account), `500`.
+- **Errors**: `400` (validation), `404` ("Account not found", including someone else's or a removed account), `500`.
 
 ### `DELETE /api/accounts/:id`
 - **Auth**: Required
-- **Logic** (`deleteAccount`): calls the `delete_account` database function, which deletes the account **and all its transactions** in one transaction; the holdings trigger then removes its holdings. All-or-nothing. Past snapshots are not changed. The frontend should confirm first (e.g. "Delete Binance and its 5 transactions? This can't be undone.").
-- **Success**: `200` — `{ success: true, message: "Account deleted successfully" }`.
-- **Errors**: `404` ("Account not found", including someone else's account), `500`.
+- **Logic** (`removeAccount`): calls the `remove_account` database function, which marks the account removed (`removed_at`) and deletes its holdings. Nothing is erased: its transactions are kept unchanged and still appear in `GET /api/transactions` (for History). A removed account no longer appears in `GET /api/accounts`, holdings, dashboard totals or net invested, and can't be edited or get new transactions. Past snapshots are not changed. The frontend should confirm first (e.g. "Remove Binance? Its holdings leave your portfolio and totals. Its 5 transactions stay in History.").
+- **Success**: `200` — `{ success: true, message: "Account removed successfully" }`.
+- **Errors**: `404` ("Account not found", including someone else's or an already removed account), `500`.
 
 ---
 
@@ -179,27 +179,18 @@ Source: `routes/transaction.routes.ts`, `controllers/transaction.controller.ts`,
 ### `GET /api/transactions`
 - **Auth**: Required
 - **Query**: `accountId?`, `assetId?` to filter.
-- **Logic** (`getTransactions`): the caller's transactions, newest `occurred_at` first, each joined with its account (`id`, `name`) and asset (`id`, `symbol`, `name`, `market`).
+- **Logic** (`getTransactions`): the caller's transactions, newest `occurred_at` first, each joined with its account (`id`, `name`, `removed_at`) and asset (`id`, `symbol`, `name`, `market`). Includes removed transactions and transactions on removed accounts, so History can show everything: a transaction's `removed_at` is set if it was removed, its account's `removed_at` if the account was removed. Account names are the current name.
 - **Success**: `200` — `{ success: true, message: "Transactions fetched successfully", data: [...] }`.
 - **Errors**: `500`.
 
-### `PATCH /api/transactions/:id`
-- **Auth**: Required
-- **Body**: any of `{ quantity?: number, pricePerUnit?: number, priceCurrency?: string, occurredAt?: string, notes?: string }`.
-- **Validation**: `400` if `type`, `accountId` or `assetId` is sent (those can't be edited: delete the transaction and add a new one), if no editable field is given, if `quantity` isn't greater than `0`, if `pricePerUnit` is negative, or if `priceCurrency` isn't supported.
-- **Logic** (`updateTransaction`):
-  1. Finds the transaction, only if it belongs to the caller.
-  2. Updates the given fields. If `priceCurrency` is the same as before, the saved `fx_rate_to_usd` is kept, so fixing a typo doesn't revalue the transaction; a different currency gets today's rate, as when adding.
-  3. The holdings trigger rebuilds the holding and rejects an edit that would leave a later sell bigger than what was held.
-- **Example**: buys of 0.3 @ $20,000 and 0.2 @ $25,000 hold 0.5 BTC @ $22,000. Editing the first buy to 0.4 gives 0.6 BTC @ $21,666.67.
-- **Success**: `200` — `{ success: true, message: "Transaction updated successfully", data: {...} }`, the updated row.
-- **Errors**: `400` (validation, or "Cannot sell X when only Y is held at that date"), `404` ("Transaction not found"), `500`.
+Transactions can't be edited. To fix a mistake, remove the transaction and add a new one.
 
 ### `DELETE /api/transactions/:id`
 - **Auth**: Required
-- **Logic** (`deleteTransaction`): deletes the transaction, only if it belongs to the caller. The holdings trigger rebuilds the holding (removing it if nothing is left) and rejects the delete if a later sell needs this buy; delete or reduce the sell first.
-- **Success**: `200` — `{ success: true, message: "Transaction deleted successfully" }`.
-- **Errors**: `400` ("Cannot sell X when only Y is held at that date"), `404` ("Transaction not found"), `500`.
+- **Logic** (`removeTransaction`): marks the transaction removed (`removed_at`), only if it belongs to the caller, isn't already removed and is on an active account. It's kept for History. The holdings trigger rebuilds the holding without it (removing the holding if nothing is left) and rejects the remove if a later sell needs this buy; remove the sell first. Removed transactions don't count toward net invested.
+- **Example**: buys of 0.3 @ $20,000 and 0.2 @ $25,000 hold 0.5 BTC @ $22,000. Removing the second buy leaves 0.3 BTC @ $20,000.
+- **Success**: `200` — `{ success: true, message: "Transaction removed successfully" }`.
+- **Errors**: `400` ("Cannot sell X when only Y is held at that date"), `404` ("Transaction not found", including already removed or on a removed account), `500`.
 
 ---
 
@@ -236,7 +227,7 @@ Source: `routes/snapshot.routes.ts`, `controllers/snapshot.controller.ts`, `serv
 ### `POST /api/snapshots`
 - **Auth**: Required
 - **Purpose**: Manually creates/overwrites **today's** snapshot for the caller (the same function the `snapshot:daily` script calls per-user).
-- **Logic**: computes `getDashboardSummary`-equivalent totals in base currency, plus `net_invested_base` (what the caller's buys cost minus what their sells brought in, in USD), and `upsert`s into `portfolio_snapshots` on `(user_id, snapshot_date)` — safe to call repeatedly the same day.
+- **Logic**: computes `getDashboardSummary`-equivalent totals in base currency, plus `net_invested_base` (what the caller's buys cost minus what their sells brought in, in USD, skipping removed transactions and removed accounts), and `upsert`s into `portfolio_snapshots` on `(user_id, snapshot_date)` — safe to call repeatedly the same day.
 - **Success**: `201` — `{ success: true, message: "Portfolio snapshot created successfully", data: {...} }`.
 - **Errors**: `500`.
 

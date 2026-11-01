@@ -4,7 +4,7 @@ import {
   createAccountController,
   getAccountsController,
   updateAccountController,
-  deleteAccountController,
+  removeAccountController,
 } from "../controllers/account.controller.js";
 
 const router = Router();
@@ -12,6 +12,6 @@ const router = Router();
 router.post("/", authMiddleware, createAccountController);
 router.get("/", authMiddleware, getAccountsController);
 router.patch("/:id", authMiddleware, updateAccountController);
-router.delete("/:id", authMiddleware, deleteAccountController);
+router.delete("/:id", authMiddleware, removeAccountController);
 
 export default router;

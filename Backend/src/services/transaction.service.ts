@@ -1,5 +1,5 @@
 import { supabase } from "../config/supabase.js";
-import { CreateTransactionInput, TransactionFilters, UpdateTransactionInput } from "../types/transaction.types.js";
+import { CreateTransactionInput, TransactionFilters } from "../types/transaction.types.js";
 import { getExchangeRate, BASE_CURRENCY } from "./currency.service.js";
 
 // Records a buy or sell. The database trigger then recalculates the
@@ -12,6 +12,7 @@ export async function createTransaction(input: CreateTransactionInput) {
     .select("id")
     .eq("id", accountId)
     .eq("user_id", userId)
+    .is("removed_at", null)
     .maybeSingle();
 
   if (accountError) {
@@ -51,73 +52,16 @@ export async function createTransaction(input: CreateTransactionInput) {
   return data;
 }
 
-// Edits a transaction. The trigger then recalculates its holding and rejects
-// an edit that would leave a later sell bigger than what was held.
-export async function updateTransaction(
-  userId: string,
-  transactionId: string,
-  changes: UpdateTransactionInput
-) {
-  const { data: existing, error: findError } = await supabase
-    .from("transactions")
-    .select("*")
-    .eq("id", transactionId)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (findError) {
-    throw new Error(findError.message);
-  }
-
-  if (!existing) {
-    throw new Error("Transaction not found");
-  }
-
-  const update: Record<string, unknown> = {};
-
-  if (changes.quantity !== undefined) update.quantity = changes.quantity;
-  if (changes.pricePerUnit !== undefined) update.price_per_unit = changes.pricePerUnit;
-  if (changes.occurredAt !== undefined) update.occurred_at = changes.occurredAt;
-  if (changes.notes !== undefined) update.notes = changes.notes;
-
-  // Same currency keeps the rate saved with the transaction, so fixing a typo
-  // doesn't revalue it. A new currency is converted at today's rate, as when adding.
-  if (changes.priceCurrency !== undefined) {
-    const currency = changes.priceCurrency.toUpperCase();
-
-    if (currency !== existing.price_currency) {
-      update.price_currency = currency;
-      update.fx_rate_to_usd = await getExchangeRate(currency, BASE_CURRENCY);
-    }
-  }
-
-  if (Object.keys(update).length === 0) {
-    return existing;
-  }
-
+// Marks a transaction removed; it stays in History. The trigger recalculates
+// its holding and rejects the remove if a later sell needs this buy.
+export async function removeTransaction(userId: string, transactionId: string) {
   const { data, error } = await supabase
     .from("transactions")
-    .update(update)
+    .update({ removed_at: new Date().toISOString() })
     .eq("id", transactionId)
     .eq("user_id", userId)
-    .select("*")
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-}
-
-// Deletes a transaction. The trigger recalculates its holding and rejects the
-// delete if a later sell needs this buy.
-export async function deleteTransaction(userId: string, transactionId: string) {
-  const { data, error } = await supabase
-    .from("transactions")
-    .delete()
-    .eq("id", transactionId)
-    .eq("user_id", userId)
+    .is("removed_at", null)
+    .in("account_id", await getActiveAccountIds(userId))
     .select("id");
 
   if (error) {
@@ -127,6 +71,20 @@ export async function deleteTransaction(userId: string, transactionId: string) {
   if (data.length === 0) {
     throw new Error("Transaction not found");
   }
+}
+
+async function getActiveAccountIds(userId: string) {
+  const { data, error } = await supabase
+    .from("accounts")
+    .select("id")
+    .eq("user_id", userId)
+    .is("removed_at", null);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.map((account) => account.id);
 }
 
 export async function getTransactions(userId: string, filters: TransactionFilters = {}) {
@@ -144,9 +102,11 @@ export async function getTransactions(userId: string, filters: TransactionFilter
       source,
       notes,
       created_at,
+      removed_at,
       accounts (
         id,
-        name
+        name,
+        removed_at
       ),
       assets (
         id,
@@ -182,7 +142,9 @@ export async function getNetInvestedBase(userId: string) {
     .from("transactions")
     .select("type, quantity, price_per_unit, fx_rate_to_usd")
     .eq("user_id", userId)
-    .in("type", ["buy", "sell"]);
+    .in("type", ["buy", "sell"])
+    .is("removed_at", null)
+    .in("account_id", await getActiveAccountIds(userId));
 
   if (error) {
     throw new Error(error.message);
