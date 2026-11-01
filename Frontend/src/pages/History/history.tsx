@@ -2,6 +2,7 @@ import { useState } from "react";
 import SnapshotTable from "./snapShotTable";
 import TransactionTable from "../../components/transactions/transactionTable";
 import { PageHeader } from "../../components/ui/pageHeader";
+import { Tabs } from "../../components/ui/tabs";
 import { Button } from "../../components/ui/button";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
 
@@ -20,28 +21,12 @@ export default function History() {
     <div className="space-y-6">
       <PageHeader title="History" />
 
-      <div role="tablist" className="flex gap-6 border-b border-border">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.key}
-            onClick={() => setTab(t.key)}
-            className={`-mb-px border-b-2 pb-3 text-sm font-medium ${
-              tab === t.key
-                ? "border-text text-text"
-                : "border-transparent text-gray-400 hover:text-text"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
       {/* Every transaction, read-only: changes are made on the Custodian and asset pages */}
       {tab === "transactions" ? (
         <TransactionTable
+          hideTitle
           emptyAction={<Button onClick={() => openAddAssetModal()}>+ Add Asset</Button>}
         />
       ) : (

@@ -1,11 +1,18 @@
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, LogOut, LayoutDashboard, PieChart, Landmark, Coins, History, Sparkles } from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
+import { useEffect, useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ChevronDown,
+  LayoutDashboard,
+  PieChart,
+  Landmark,
+  Coins,
+  History,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 import { getAccounts } from "../../services/account.service";
 import { getUserAssets } from "../../services/userAssets.service";
-import { logout } from "../../services/auth.service";
-
 import Logo from "../../assets/Vector.png";
 
 const topNavItems = [
@@ -18,28 +25,82 @@ const bottomNavItems = [
   { label: "Analysis", path: "/Analysis", icon: Sparkles },
 ];
 
+// Top-level links: gold when you're on that page
+function rowClass({ isActive }: { isActive: boolean }) {
+  return `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
+    isActive ? "bg-accent text-primary" : "text-white hover:bg-white/10"
+  }`;
+}
+
+// Links inside a dropdown: same rule, smaller; long names are cut with "…"
+function subItemClass({ isActive }: { isActive: boolean }) {
+  return `block truncate rounded-lg px-3 py-2 text-sm transition ${
+    isActive
+      ? "bg-accent font-medium text-primary"
+      : "text-white/75 hover:bg-white/10 hover:text-white"
+  }`;
+}
+
+interface NavGroupProps {
+  icon: LucideIcon;
+  label: string;
+  isOpen: boolean;
+  isInside: boolean; // you're on one of its pages: faint highlight
+  onToggle: () => void;
+  children: ReactNode;
+}
+
+// A row that opens a list underneath it (Custodians, Assets)
+function NavGroup({ icon: Icon, label, isOpen, isInside, onToggle, children }: NavGroupProps) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10 ${
+          isInside ? "bg-white/10" : ""
+        }`}
+      >
+        <Icon className="h-5 w-5" />
+        <span className="flex-1 text-left">{label}</span>
+        <ChevronDown
+          className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Slides open by growing from 0 to full height; hidden items can't be tabbed to */}
+      <div
+        className={`grid transition-[grid-template-rows,visibility] duration-200 ${
+          isOpen ? "visible grid-rows-[1fr]" : "invisible grid-rows-[0fr]"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="ml-6 mt-1 space-y-1 border-l border-white/15 pl-3">{children}</div>
+        </div>
+      </div>
+    </li>
+  );
+}
+
 export function Sidebar() {
-   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [isAccountsOpen, setIsAccountsOpen] = useState(false);
+  const { pathname } = useLocation();
+  const isOnAccounts = pathname.startsWith("/accounts");
+  const isOnAssets = pathname.startsWith("/assets");
+
+  const [isAccountsOpen, setIsAccountsOpen] = useState(isOnAccounts);
+  const [isAssetsOpen, setIsAssetsOpen] = useState(isOnAssets);
+
+  // Arriving on a custodian or asset page opens its group
+  useEffect(() => {
+    if (isOnAccounts) setIsAccountsOpen(true);
+    if (isOnAssets) setIsAssetsOpen(true);
+  }, [isOnAccounts, isOnAssets]);
 
   const { data: accounts = [], isLoading: accountsLoading } = useQuery({
     queryKey: ["accounts"],
     queryFn: getAccounts,
   });
-  const [isAssetsOpen, setIsAssetsOpen] = useState(false);
-  const location = useLocation();
-  const isOnAssetsRoute = location.pathname.startsWith("/assets");
-  const isOnAssetsList = location.pathname === "/assets";
-  const isOnAccountsRoute = location.pathname.startsWith("/accounts");
- useEffect(() => {
-  if (location.pathname.startsWith("/assets")) {
-    setIsAssetsOpen(true);
-  }
-  if (location.pathname.startsWith("/accounts")) {
-    setIsAccountsOpen(true);
-  }
-}, [location.pathname]);
 
   const { data: holdings = [], isLoading: assetsLoading } = useQuery({
     queryKey: ["user-assets"],
@@ -62,179 +123,85 @@ export function Sidebar() {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
-  async function handleLogout() {
-    await logout();
-    queryClient.clear();
-    navigate("/auth");
-  }
   return (
-    <aside className=" hidden h-[calc(100vh-2rem)] w-64 shrink-0 rounded-2xl bg-primary text-white md:flex md:flex-col">
-      {/* Logo */}
+    <aside className="hidden h-[calc(100vh-2rem)] w-64 shrink-0 rounded-2xl bg-primary text-white md:flex md:flex-col">
       <div className="flex items-center gap-3 px-6 py-8">
         <img src={Logo} alt="VaultTrack Logo" className="h-8 w-8" />
         <p className="text-xl font-bold text-[#efeeea]">VaultTrack</p>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4">
+      <nav className="thin-scrollbar flex-1 overflow-y-auto px-4 pb-4">
         <ul className="space-y-2">
           {topNavItems.map((item) => (
             <li key={item.path}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
-                    isActive
-                      ? "bg-accent text-primary"
-                      : "text-white hover:bg-white/10"
-                  }`
-                }
-              >
+              <NavLink to={item.path} className={rowClass}>
                 <item.icon className="h-5 w-5" />
                 <span>{item.label}</span>
               </NavLink>
             </li>
           ))}
-          <li>
-            <button
-              type="button"
-              onClick={() => setIsAccountsOpen((prev) => !prev)}
-              className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10 ${
-                isOnAccountsRoute ? "bg-white/10" : ""
-              }`}
-            >
-              <span className="flex items-center gap-3">
-                <Landmark className="h-5 w-5" />
-               <span>Custodians</span>
-              </span>
 
-              <ChevronDown
-                className={`h-4 w-4 transition ${
-                  isAccountsOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {isAccountsOpen && (
-              <div className="mt-2 space-y-1 pl-8">
-                {accountsLoading ? (
-                  <p className="text-sm text-white/60">Loading...</p>
-                ) : accounts.length === 0 ? (
-                  <p className="text-sm text-white/60">No custodians yet</p>
-                ): (
-                  accounts.map((account) => (
-                    <NavLink
-                      key={account.id}
-                      to={`/accounts/${account.id}`}
-                      className={({ isActive }) =>
-                        `block rounded-lg px-3 py-2 text-sm transition ${
-                          isActive
-                            ? "bg-accent text-primary"
-                            : "text-white/80 hover:bg-white/10 hover:text-white"
-                        }`
-                      }
-                    >
-                      {account.name}
-                    </NavLink>
-                  ))
-                )}
-              </div>
+          <NavGroup
+            icon={Landmark}
+            label="Custodians"
+            isOpen={isAccountsOpen}
+            isInside={isOnAccounts}
+            onToggle={() => setIsAccountsOpen((open) => !open)}
+          >
+            {accountsLoading ? (
+              <p className="px-3 py-2 text-sm text-white/60">Loading...</p>
+            ) : accounts.length === 0 ? (
+              <p className="px-3 py-2 text-sm text-white/60">No custodians yet</p>
+            ) : (
+              accounts.map((account) => (
+                <NavLink
+                  key={account.id}
+                  to={`/accounts/${account.id}`}
+                  title={account.name}
+                  className={subItemClass}
+                >
+                  {account.name}
+                </NavLink>
+              ))
             )}
-          </li>
-<li>
-  <div className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition ${
-    isOnAssetsList
-      ? "bg-accent text-primary"
-      : isOnAssetsRoute
-      ? "bg-white/10 text-white"
-      : "text-white hover:bg-white/10"
-  }`}>
-    <button
-  type="button"
-  onClick={() => {
-    if (location.pathname.startsWith("/assets")) {
-      setIsAssetsOpen((prev) => !prev);
-    } else {
-      navigate("/assets");
-      setIsAssetsOpen(true);
-    }
-  }}
-  className="flex flex-1 items-center gap-3"
->
-  <Coins className="h-5 w-5" />
-  <span>Assets</span>
-</button>
+          </NavGroup>
 
-    <button
-      type="button"
-      onClick={() => setIsAssetsOpen((prev) => !prev)}
-      aria-label="Toggle assets"
-    >
-      <ChevronDown
-  className={`h-4 w-4 transition ${
-    isAssetsOpen ? "rotate-180" : ""
-  }`}
-/>
-    </button>
-  </div>
+          <NavGroup
+            icon={Coins}
+            label="Assets"
+            isOpen={isAssetsOpen}
+            isInside={isOnAssets}
+            onToggle={() => setIsAssetsOpen((open) => !open)}
+          >
+            <NavLink to="/assets" end className={subItemClass}>
+              All assets
+            </NavLink>
+            {assetsLoading ? (
+              <p className="px-3 py-2 text-sm text-white/60">Loading...</p>
+            ) : (
+              topAssets.map((asset) => (
+                <NavLink
+                  key={asset.id}
+                  to={`/assets/${asset.id}`}
+                  title={asset.label}
+                  className={subItemClass}
+                >
+                  {asset.label}
+                </NavLink>
+              ))
+            )}
+          </NavGroup>
 
-  {isAssetsOpen && (
-    <div className="mt-2 space-y-1 pl-8">
-      {assetsLoading ? (
-        <p className="text-sm text-white/60">Loading...</p>
-      ) : topAssets.length === 0 ? (
-        <p className="text-sm text-white/60">No assets yet</p>
-      ) : (
-        <>
-          {topAssets.map((asset) => (
-  <NavLink
-    key={asset.id}
-    to={`/assets/${asset.id}`}
-    className={({ isActive }) =>
-      `block rounded-lg px-3 py-2 text-sm transition ${
-        isActive
-          ? "bg-accent text-primary"
-          : "text-white/80 hover:bg-white/10 hover:text-white"
-      }`
-    }
-  >
-    {asset.label}
-  </NavLink>
-))}
-        </>
-      )}
-    </div>
-  )}
-</li>
-{bottomNavItems.map((item) => (
-  <li key={item.path}>
-    <NavLink
-      to={item.path}
-      className={({ isActive }) =>
-        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
-          isActive
-            ? "bg-accent text-primary"
-            : "text-white hover:bg-white/10"
-        }`
-      }
-    >
-      <item.icon className="h-5 w-5" />
-      <span>{item.label}</span>
-    </NavLink>
-  </li>
-))}
-          <li>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Logout</span>
-            </button>
-          </li>
+          {bottomNavItems.map((item) => (
+            <li key={item.path}>
+              <NavLink to={item.path} className={rowClass}>
+                <item.icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </NavLink>
+            </li>
+          ))}
         </ul>
       </nav>
     </aside>
-    );
+  );
 }
