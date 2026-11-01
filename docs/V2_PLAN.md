@@ -1,6 +1,14 @@
 # VAULTRACK v2 Plan
 
-_As of 2026-11-01_
+_Shipped 2026-11-01_
+
+## Status
+
+**v2 shipped on Sun 1 Nov 2026** (`main` at `f336ac8`, live at https://vaultrack.vercel.app), tested by David on the live site.
+
+- All three committed features are done (PRs listed in "Committed features" below).
+- Before the mobile work, a UI pass added shared Card / Button / PageHeader components, tabs on History, Custodian and Asset pages, and log out in the profile menu (PRs #16, #17).
+- **Still open, both AI fixes from "Fixes and groundwork":** lock down the `/analyze` endpoint, and keep the AI answer when the memory step fails. Both are blocked until a teammate with access to the AI service on Render is available; they ship as a follow-up, not a new version.
 
 ## Overview
 
@@ -12,7 +20,7 @@ v2 makes the VAULTRACK web app solid and usable on phones, and moves holdings on
 
 ## Milestones
 
-v2 ships **Fri 30 Oct 2026**. All bugs are fixed before any feature work starts. The day-by-day schedule lives in Notion (Due dates + Calendar view); this is the summary.
+v2 was planned for **Fri 30 Oct 2026** and shipped **Sun 1 Nov 2026**, two days late. All bugs were fixed before feature work started. The planned schedule:
 
 | Dates | Phase |
 | --- | --- |
@@ -21,15 +29,17 @@ v2 ships **Fri 30 Oct 2026**. All bugs are fixed before any feature work starts.
 | Sun 25 – Thu 29 Oct | **Features:** mobile responsiveness (web app on phone screens) |
 | Fri 30 Oct | Final testing and release |
 
-The schedule has no spare days. CSV import and cash and savings were cut from v2 on 29 Oct (see "Moved out of v2").
+CSV import and cash and savings were cut from v2 on 29 Oct (see "Moved out of v2").
 
 ## Committed features
 
-| # | Feature | What it means | Depends on |
+All three are done.
+
+| # | Feature | What it means | Done in |
 | --- | --- | --- | --- |
-| 1 | Transactions model | Buys, sells and other events are stored as transactions; holdings are calculated from them (see below). | Schema migrations in the repo |
-| 2 | Edit, sell and remove | Edit accounts; record sells; remove accounts and transactions without erasing them. A History page lists every transaction. Holdings update to match (see "Edit, sell and remove" below). | Transactions model |
-| 3 | Mobile responsiveness | The existing web app works on a real phone browser against the live site: login, dashboard, holdings, transactions. | Login working on Safari (done, PR #3) |
+| 1 | Transactions model | Buys, sells and other events are stored as transactions; holdings are calculated from them (see below). | PR #11 (schema migrations first, PR #10) |
+| 2 | Edit, sell and remove | Edit accounts; record sells; remove accounts and transactions without erasing them. A History page lists every transaction. Holdings update to match (see "Edit, sell and remove" below). | PRs #12, #13 (API), #15 (UI) |
+| 3 | Mobile responsiveness | The existing web app works on a real phone browser against the live site: login, dashboard, holdings, transactions. | PRs #18 (slide-out menu), #19 (table rows as cards), #20 (page pass, currency symbols) |
 
 ## Moved out of v2
 
@@ -48,7 +58,7 @@ The v1 review found 24 items: 11 bugs, 8 missing pieces, 5 chores. All are in No
 - **Edit, sell and remove** for accounts and transactions.
 - **Auth that works on mobile and Safari:** fixed in PR #3 by routing the API through Vercel so the login cookie is first-party. The Supabase Auth decision is still open.
 - **Schema migrations in the repo** (with row-level security) before the transactions model. **Scheduled jobs in the repo** is in the backlog; exchange sync will need it.
-- **AI: fixes only.** Lock down the `/analyze` endpoint, fix the timeout mismatch, keep answers when the memory step fails, and show real errors.
+- **AI: fixes only.** Lock down the `/analyze` endpoint, fix the timeout mismatch, keep answers when the memory step fails, and show real errors. The timeout (PR #7) and real errors (PR #6) are fixed; the `/analyze` lock-down and memory-step fix are still open (see "Status").
 
 ## Transactions model (decided 2026-10-17)
 
@@ -76,7 +86,7 @@ Nothing is erased. Removing marks a row as removed, so the History page can stil
 
 - **Sell vs remove.** Sell records a real sale: the trade happened and you got money for it (partial sells allowed, profit and net invested stay correct). Remove means "this never happened": use it only to undo a transaction entered by mistake. To fix a typo, remove the wrong transaction and add the right one.
 - **Removing a custodian** takes it and its holdings out of the Dashboard, Portfolio, sidebar and totals. Its transactions are kept and still appear in History.
-- **History page** reads from `transactions` (joined to `accounts` and `assets`), including removed rows. It only lists transactions; account changes (create, rename, remove) are not recorded. Account names are always the current name. The snapshot table stays below it.
+- **History page** reads from `transactions` (joined to `accounts` and `assets`), including removed rows. It only lists transactions; account changes (create, rename, remove) are not recorded. Account names are always the current name. Transactions and snapshots are separate tabs (PR #16).
   ```
   Date    Type  Asset  Qty  Price      Custodian
   2 Nov   Sell  BTC    0.2  $30,000    Binance (removed)
@@ -95,7 +105,7 @@ Nothing is erased. Removing marks a row as removed, so the History page can stil
 
 **Frontend changes**
 - Custodian page: Edit and Remove custodian; a Sell button on each holding; a transactions list with Remove on each row.
-- History page: all transactions above the existing snapshot table.
+- History page: Transactions and Snapshots tabs.
 - Asset page (`/assets/<asset id>`, added 2026-11-01): one page per asset, combining every custodian that holds it. Shows how much you hold, % of portfolio, value, average cost and profit; a "Held in" breakdown by custodian with Sell on each; Sell and "+ Add more" buttons; this asset's transactions with Remove. Asset names in tables and the sidebar link here. **No price chart in v2:** we only store the latest price, so the chart waits for price history ("Store price history per asset" in the backlog).
 - **The UI must say when to use Sell and when to use Remove:**
   - Sell form, under the title: "Record a sale you made. This counts toward your profit."
@@ -104,7 +114,7 @@ Nothing is erased. Removing marks a row as removed, so the History page can stil
 
 ## Optional features
 
-Good ideas we may pick up once v2 ships. None are scheduled.
+Good ideas we may pick up now that v2 has shipped. None are scheduled.
 
 | Feature | What it means |
 | --- | --- |
