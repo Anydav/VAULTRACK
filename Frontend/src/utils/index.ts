@@ -4,12 +4,24 @@ export const noop = () => {}
 // currency once, then consumed (removed) the first time it's read.
 export const CURRENCY_PROMPT_STORAGE_KEY = "vaulttrack_show_currency_prompt";
 
+// CAD and AUD keep a prefix (CA$, A$) so they don't read as US dollars
+const NARROW_SYMBOL_EXCEPTIONS = new Set(["CAD", "AUD"]);
+
+// "$12,400.00", "₦18,500,000.00", "¥1,500": symbols are shorter than codes
 export function formatCurrency(amount: number, currency?: string) {
-  const formatted = amount.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  return currency ? `${currency} ${formatted}` : formatted;
+  if (!currency) {
+    return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      currencyDisplay: NARROW_SYMBOL_EXCEPTIONS.has(currency) ? "symbol" : "narrowSymbol",
+    }).format(amount);
+  } catch {
+    // Unknown currency code: fall back to "XYZ 1,234.00" instead of crashing the page
+    return `${currency} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
 }
 
 export const SUPPORTED_CURRENCIES = [

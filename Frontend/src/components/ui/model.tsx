@@ -39,12 +39,12 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
   // Clicking the backdrop doesn't close it, so a half-filled form isn't lost
   // by accident: close with the X, Cancel or Escape.
   return (
-    <div className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-black/40 px-4">
+    <div className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-black/40 px-3 sm:px-4">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`thin-scrollbar w-full ${SIZE_CLASSES[size]} max-h-[85vh] animate-modal-in overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl`}
+        className={`thin-scrollbar w-full ${SIZE_CLASSES[size]} max-h-[85vh] animate-modal-in overflow-y-auto rounded-2xl bg-surface p-5 shadow-xl sm:p-6`}
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 id="modal-title" className="text-lg font-semibold text-text">{title}</h2>

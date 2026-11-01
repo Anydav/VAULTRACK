@@ -160,7 +160,7 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
     .join("");
 
   return (
-    <header className="flex h-16 items-center justify-between gap-2 rounded-2xl border border-border bg-surface px-3 shadow-[var(--shadow-card)] sm:gap-4 sm:px-6 md:h-20">
+    <header className="flex h-16 items-center justify-between gap-2 rounded-2xl border border-border bg-surface px-3 sm:gap-4 md:shadow-[var(--shadow-card)] sm:px-6 md:h-20">
       {/* Phones: menu button */}
       <button
         type="button"
