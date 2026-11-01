@@ -62,7 +62,7 @@ export function Table<T>({
             {columns.map((column) => (
               <th
                 key={column.key}
-                className={`whitespace-nowrap px-3 pb-3 font-medium first:pl-0 last:pr-0 ${
+                className={`whitespace-nowrap border-r border-border px-3 pb-3 font-medium first:pl-0 last:border-r-0 last:pr-0 ${
                   column.align === "right"
                     ? "text-right"
                     : column.align === "center"
@@ -84,7 +84,7 @@ export function Table<T>({
               {columns.map((column) => (
                 <td
                   key={column.key}
-                  className={`whitespace-nowrap px-3 py-3 first:pl-0 last:pr-0 ${
+                  className={`whitespace-nowrap border-r border-border px-3 py-3 first:pl-0 last:border-r-0 last:pr-0 ${
                     column.align === "right"
                       ? "text-right"
                       : column.align === "center"
