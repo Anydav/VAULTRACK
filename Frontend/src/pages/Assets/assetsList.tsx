@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { getUserAssets } from "../../services/userAssets.service";
 import { Table, type TableColumn } from "../../components/tables/table";
+import { AssetLink } from "../../components/ui/assetLink";
 import type { Holding } from "../../types/userAssets";
 import { formatCurrency } from "../../utils";
 
@@ -30,11 +31,7 @@ export default function AssetsList() {
     {
       key: "asset",
       header: "Asset",
-      render: (holding) => (
-        <span className="font-medium text-text">
-          {holding.assets?.symbol ?? "-"}
-        </span>
-      ),
+      render: (holding) => <AssetLink holding={holding} />,
     },
     {
       key: "qty",

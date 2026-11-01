@@ -96,6 +96,7 @@ Nothing is erased. Removing marks a row as removed, so the History page can stil
 **Frontend changes**
 - Custodian page: Edit and Remove custodian; a Sell button on each holding; a transactions list with Remove on each row.
 - History page: all transactions above the existing snapshot table.
+- Asset page (`/assets/<asset id>`, added 2026-11-01): one page per asset, combining every custodian that holds it. Shows how much you hold, % of portfolio, value, average cost and profit; a "Held in" breakdown by custodian with Sell on each; Sell and "+ Add more" buttons; this asset's transactions with Remove. Asset names in tables and the sidebar link here. **No price chart in v2:** we only store the latest price, so the chart waits for price history ("Store price history per asset" in the backlog).
 - **The UI must say when to use Sell and when to use Remove:**
   - Sell form, under the title: "Record a sale you made. This counts toward your profit."
   - Remove transaction confirmation: "Only remove a transaction you entered by mistake. It will be treated as if it never happened. If you sold this asset, use Sell instead." with buttons "Remove" and "Record a sale instead" (opens the Sell form).

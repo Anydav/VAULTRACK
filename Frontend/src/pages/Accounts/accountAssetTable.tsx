@@ -2,15 +2,18 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserAssets } from "../../services/userAssets.service";
 import { Table, type TableColumn } from "../../components/tables/table";
+import { AssetLink } from "../../components/ui/assetLink";
 import type { Holding } from "../../types/userAssets";
 import { formatCurrency } from "../../utils";
 
 interface AccountAssetsTableProps {
   accountId: string;
+  onSell: (holding: Holding) => void;
 }
 
 export default function AccountAssetsTable({
   accountId,
+  onSell,
 }: AccountAssetsTableProps) {
   const { data: holdings = [], isLoading, isError, refetch } = useQuery({
   queryKey: ["user-assets"],
@@ -26,11 +29,7 @@ export default function AccountAssetsTable({
     {
       key: "asset",
       header: "Asset",
-      render: (holding) => (
-        <span className="font-medium text-text">
-          {holding.assets?.symbol ?? "-"}
-        </span>
-      ),
+      render: (holding) => <AssetLink holding={holding} />,
     },
     {
       key: "qty",
@@ -83,6 +82,20 @@ export default function AccountAssetsTable({
           </span>
         );
       },
+    },
+    {
+      key: "sell",
+      header: "",
+      align: "right",
+      render: (holding) => (
+        <button
+          type="button"
+          onClick={() => onSell(holding)}
+          className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 hover:border-accent-secondary hover:text-text"
+        >
+          Sell
+        </button>
+      ),
     },
   ];
 
