@@ -8,9 +8,12 @@ import type { Holding } from "../../types/userAssets";
 import { formatCurrency } from "../../utils";
 import { Card } from "../../components/ui/card";
 import { PageHeader } from "../../components/ui/pageHeader";
+import { Button } from "../../components/ui/button";
+import { useAddAssetModal } from "../../context/addAssetModelcontext";
 
 export default function AssetsList() {
   const [query, setQuery] = useState("");
+  const { openAddAssetModal } = useAddAssetModal();
 
   const { data: holdings = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["user-assets"],
@@ -148,7 +151,8 @@ export default function AssetsList() {
           isLoading={isLoading}
           isError={isError}
           onRetry={() => refetch()}
-          emptyMessage="No assets yet"
+          emptyMessage={query ? `No assets match "${query}"` : "No holdings yet"}
+          emptyAction={!query && <Button onClick={() => openAddAssetModal()}>+ Add Asset</Button>}
         />
       </Card>
     </div>

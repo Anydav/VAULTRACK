@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getDashboardSummary } from "../../services/dashboard.service";
 import { getAccounts } from "../../services/account.service";
-import { LoadingSpinner } from "../../components/ui/loadingSpinner";
+import { CardSkeleton } from "../../components/ui/skeleton";
 import { EmptyState } from "../../components/ui/emptyState";
 import { ErrorState } from "../../components/ui/errorState";
 import { formatCurrency } from "../../utils";
@@ -21,7 +21,7 @@ export default function PortfolioSummary() {
   if (summaryLoading || accountsLoading) {
     return (
       <Card>
-        <LoadingSpinner message="Loading summary..." />
+        <CardSkeleton />
       </Card>
     );
   }

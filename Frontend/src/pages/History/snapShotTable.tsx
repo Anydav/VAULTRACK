@@ -52,6 +52,7 @@ export default function SnapshotTable() {
         new Date(row.snapshot_date).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
+          year: "numeric",
         }),
     },
     {

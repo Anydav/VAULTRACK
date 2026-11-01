@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { transactionsQuery } from "../../services/transaction.service";
 import { getUserAssets } from "../../services/userAssets.service";
@@ -17,6 +17,7 @@ interface TransactionTableProps {
   // is read-only (History).
   onSell?: (holding: Holding) => void;
   emptyMessage?: string;
+  emptyAction?: ReactNode;
 }
 
 // Transactions, newest first, including removed ones. Filtered by custodian
@@ -26,6 +27,7 @@ export default function TransactionTable({
   assetId,
   onSell,
   emptyMessage = "No transactions yet",
+  emptyAction,
 }: TransactionTableProps) {
   const [toRemove, setToRemove] = useState<Transaction | null>(null);
 
@@ -84,6 +86,7 @@ export default function TransactionTable({
         isError={isError}
         onRetry={() => refetch()}
         emptyMessage={emptyMessage}
+        emptyAction={emptyAction}
       />
 
       {toRemove && (

@@ -6,6 +6,8 @@ import { AssetLink } from "../../components/ui/assetLink";
 import type { Holding } from "../../types/userAssets";
 import { formatCurrency } from "../../utils";
 import { Card } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { useAddAssetModal } from "../../context/addAssetModelcontext";
 
 interface AccountAssetsTableProps {
   accountId: string;
@@ -16,6 +18,7 @@ export default function AccountAssetsTable({
   accountId,
   onSell,
 }: AccountAssetsTableProps) {
+  const { openAddAssetModal } = useAddAssetModal();
   const { data: holdings = [], isLoading, isError, refetch } = useQuery({
   queryKey: ["user-assets"],
   queryFn: getUserAssets,
@@ -112,6 +115,7 @@ export default function AccountAssetsTable({
   isError={isError}
   onRetry={() => refetch()}
   emptyMessage="No assets in this custodian yet"
+  emptyAction={<Button onClick={() => openAddAssetModal({ accountId })}>+ Add Asset</Button>}
 />
     </Card>
   );
