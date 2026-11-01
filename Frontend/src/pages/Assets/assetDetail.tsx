@@ -16,6 +16,14 @@ import { formatCurrency } from "../../utils";
 import { Card } from "../../components/ui/card";
 import { PageHeader } from "../../components/ui/pageHeader";
 import { Button } from "../../components/ui/button";
+import { Tabs } from "../../components/ui/tabs";
+
+const tabs = [
+  { key: "heldIn", label: "Held in" },
+  { key: "transactions", label: "Transactions" },
+] as const;
+
+type AssetTab = (typeof tabs)[number]["key"];
 
 // "5 min ago", "3 h ago", or the date if older than a day
 function timeAgo(date: string) {
@@ -30,6 +38,7 @@ function timeAgo(date: string) {
 export default function AssetDetail() {
   const { assetId } = useParams<{ assetId: string }>();
   const [sellHoldings, setSellHoldings] = useState<Holding[] | null>(null);
+  const [tab, setTab] = useState<AssetTab>("heldIn");
   const { openAddAssetModal } = useAddAssetModal();
 
   const {
@@ -214,12 +223,7 @@ export default function AssetDetail() {
         }
       />
 
-      {assetHoldings.length === 0 ? (
-        <Card>
-          <p className="text-sm text-gray-500">You don't hold any {asset.symbol} right now.</p>
-        </Card>
-      ) : (
-        <>
+      {assetHoldings.length > 0 && (
           <Card>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
@@ -250,19 +254,27 @@ export default function AssetDetail() {
               </div>
             </div>
           </Card>
-
-          <Card>
-            <h2 className="mb-4 text-lg font-semibold text-text">Held in</h2>
-            <Table columns={heldInColumns} data={assetHoldings} getRowKey={(h) => h.id} />
-          </Card>
-        </>
       )}
 
-      <TransactionTable
-        assetId={assetId}
-        onSell={(h) => setSellHoldings([h])}
-        emptyMessage={`No ${asset.symbol} transactions yet`}
-      />
+      <Tabs tabs={tabs} active={tab} onChange={setTab} />
+
+      {tab === "heldIn" ? (
+        <Card>
+          <Table
+            columns={heldInColumns}
+            data={assetHoldings}
+            getRowKey={(h) => h.id}
+            emptyMessage={`You don't hold any ${asset.symbol} right now`}
+          />
+        </Card>
+      ) : (
+        <TransactionTable
+          assetId={assetId}
+          onSell={(h) => setSellHoldings([h])}
+          hideTitle
+          emptyMessage={`No ${asset.symbol} transactions yet`}
+        />
+      )}
 
       {sellHoldings && (
         <SellModal holdings={sellHoldings} onClose={() => setSellHoldings(null)} />
