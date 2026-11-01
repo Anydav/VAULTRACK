@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { getAccounts, createAccount } from "../../services/account.service";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
+import { Button } from "../ui/button";
 
 interface PresetCustodian {
   name: string;
@@ -191,15 +192,10 @@ export default function SelectAccountStep() {
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={() => goToStep("createAccount")}
-          disabled={isBusy}
-          className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f241f] disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <Button onClick={() => goToStep("createAccount")} disabled={isBusy}>
           <Plus className="h-4 w-4" />
           Add Custodian
-        </button>
+        </Button>
       </div>
 
       {(isLoading || accounts.length > 0) && (

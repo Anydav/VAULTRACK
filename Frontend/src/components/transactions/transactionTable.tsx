@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { transactionsQuery } from "../../services/transaction.service";
 import { getUserAssets } from "../../services/userAssets.service";
@@ -7,6 +7,7 @@ import { transactionColumns, RemovedLabel } from "./transactionColumns";
 import RemoveTransactionModal from "./removeTransactionModal";
 import type { Transaction } from "../../types/transaction";
 import type { Holding } from "../../types/userAssets";
+import { Card } from "../ui/card";
 
 interface TransactionTableProps {
   accountId?: string;
@@ -16,6 +17,7 @@ interface TransactionTableProps {
   // is read-only (History).
   onSell?: (holding: Holding) => void;
   emptyMessage?: string;
+  emptyAction?: ReactNode;
 }
 
 // Transactions, newest first, including removed ones. Filtered by custodian
@@ -25,6 +27,7 @@ export default function TransactionTable({
   assetId,
   onSell,
   emptyMessage = "No transactions yet",
+  emptyAction,
 }: TransactionTableProps) {
   const [toRemove, setToRemove] = useState<Transaction | null>(null);
 
@@ -72,7 +75,7 @@ export default function TransactionTable({
       : undefined;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <h2 className="mb-4 text-lg font-semibold text-text">Transactions</h2>
 
       <Table
@@ -83,6 +86,7 @@ export default function TransactionTable({
         isError={isError}
         onRetry={() => refetch()}
         emptyMessage={emptyMessage}
+        emptyAction={emptyAction}
       />
 
       {toRemove && (
@@ -99,6 +103,6 @@ export default function TransactionTable({
           }
         />
       )}
-    </div>
+    </Card>
   );
 }

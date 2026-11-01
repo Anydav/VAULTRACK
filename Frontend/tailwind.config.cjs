@@ -4,6 +4,7 @@ module.exports = {
     extend: {
       colors: {
         primary: "var(--color-primary)",
+        "primary-hover": "var(--color-primary-hover)",
         accent: "var(--color-accent)",
         "accent-secondary": "var(--color-accent-secondary)",
 
@@ -41,6 +42,11 @@ module.exports = {
         display: ['"Sora"', "ui-sans-serif", "system-ui", "sans-serif"],
       },
       keyframes: {
+        "fade-in": { "0%": { opacity: "0" }, "100%": { opacity: "1" } },
+        "modal-in": {
+          "0%": { opacity: "0", transform: "translateY(8px) scale(0.98)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
         "toast-in": {
           "0%": { transform: "translateX(120%)", opacity: "0" },
           "60%": { transform: "translateX(-10%)", opacity: "1" },
@@ -53,6 +59,8 @@ module.exports = {
         },
       },
       animation: {
+        "fade-in": "fade-in 0.15s ease-out",
+        "modal-in": "modal-in 0.18s ease-out",
         "toast-in": "toast-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
         "toast-out": "toast-out 0.3s ease-in forwards",
       },

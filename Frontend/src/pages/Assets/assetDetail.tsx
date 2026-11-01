@@ -13,6 +13,9 @@ import { useAddAssetModal } from "../../context/addAssetModelcontext";
 import type { Asset } from "../../types/asset";
 import type { Holding } from "../../types/userAssets";
 import { formatCurrency } from "../../utils";
+import { Card } from "../../components/ui/card";
+import { PageHeader } from "../../components/ui/pageHeader";
+import { Button } from "../../components/ui/button";
 
 // "5 min ago", "3 h ago", or the date if older than a day
 function timeAgo(date: string) {
@@ -179,50 +182,45 @@ export default function AssetDetail() {
     },
   ];
 
-  const cardClass = "rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]";
-
   return (
     <div className="space-y-6">
       {backLink}
 
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-text">
+      <PageHeader
+        title={
+          <>
             {asset.symbol} <span className="text-base font-medium text-gray-400">· {asset.name} · {asset.market}</span>
-          </h1>
-          {first && (
-            <p className="mt-1 text-sm text-gray-500">
+          </>
+        }
+        subtitle={
+          first && (
+            <>
               Price {formatCurrency(first.valuation.latestPriceDisplay, currency)}
               {first.valuation.priceLastUpdated && ` · updated ${timeAgo(first.valuation.priceLastUpdated)}`}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={assetHoldings.length === 0}
-            onClick={() => setSellHoldings(assetHoldings)}
-            className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:border-accent-secondary hover:text-text disabled:opacity-40"
-          >
-            Sell
-          </button>
-          <button
-            type="button"
-            onClick={handleAddMore}
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f241f]"
-          >
-            + Add more
-          </button>
-        </div>
-      </div>
+            </>
+          )
+        }
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              disabled={assetHoldings.length === 0}
+              onClick={() => setSellHoldings(assetHoldings)}
+            >
+              Sell
+            </Button>
+            <Button onClick={handleAddMore}>+ Add more</Button>
+          </>
+        }
+      />
 
       {assetHoldings.length === 0 ? (
-        <div className={cardClass}>
+        <Card>
           <p className="text-sm text-gray-500">You don't hold any {asset.symbol} right now.</p>
-        </div>
+        </Card>
       ) : (
         <>
-          <div className={cardClass}>
+          <Card>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
                 <p className="text-xs text-gray-400">You hold</p>
@@ -251,12 +249,12 @@ export default function AssetDetail() {
                 </p>
               </div>
             </div>
-          </div>
+          </Card>
 
-          <div className={cardClass}>
+          <Card>
             <h2 className="mb-4 text-lg font-semibold text-text">Held in</h2>
             <Table columns={heldInColumns} data={assetHoldings} getRowKey={(h) => h.id} />
-          </div>
+          </Card>
         </>
       )}
 

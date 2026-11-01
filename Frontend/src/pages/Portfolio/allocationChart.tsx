@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { getUserAssets } from "../../services/userAssets.service";
 import { ErrorState } from "../../components/ui/errorState";
 import { formatCurrency } from "../../utils";
+import { Card } from "../../components/ui/card";
 
 type GroupBy = "asset" | "market" | "account";
 
@@ -52,7 +53,7 @@ export default function AllocationChart() {
   }, [holdings, groupBy]);
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text">
           Allocation Analysis
@@ -153,6 +154,6 @@ export default function AllocationChart() {
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

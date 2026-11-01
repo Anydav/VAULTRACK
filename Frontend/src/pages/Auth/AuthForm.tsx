@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Input } from "../../components/ui/input";
 import { Toast } from "../../components/ui/errorToast";
 import { SocialButtons } from "./socialButton";
+import { Button } from "../../components/ui/button";
 
 type AuthMode = "login" | "signup";
 
@@ -180,11 +181,7 @@ export function AuthForm({
               )}
             </>
           )}
-          <button
-            type="submit"
-            disabled={isPending || !isFormValid}
-            className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="submit" fullWidth disabled={isPending || !isFormValid}>
             {isPending
               ? isSlow
                 ? "Waking up the server..."
@@ -192,7 +189,7 @@ export function AuthForm({
               : isLogin
               ? "Login"
               : "Create Account"}
-          </button>
+          </Button>
 
           {isPending && isSlow && (
             <p className="text-center text-xs text-gray-400">

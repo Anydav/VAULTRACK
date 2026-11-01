@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, Moon, Sun } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { getMe, updatePreferredCurrency } from "../../services/profile.service";
 import { getUserAssets } from "../../services/userAssets.service";
@@ -63,11 +63,13 @@ export function Topbar() {
   enabled: debouncedQuery.length > 0,
 });
 
-  const matchingHoldings = holdings.filter((holding) =>
-    holding.assets?.symbol
-      ?.toLowerCase()
-      .includes(debouncedQuery.toLowerCase()) ||
-    holding.assets?.name?.toLowerCase().includes(debouncedQuery.toLowerCase())
+  // One entry per asset, even if it's held with several custodians
+  const matchingHoldings = holdings.filter(
+    (holding, index) =>
+      holding.assets &&
+      holdings.findIndex((h) => h.assets?.id === holding.assets?.id) === index &&
+      (holding.assets.symbol?.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+        holding.assets.name?.toLowerCase().includes(debouncedQuery.toLowerCase()))
   );
 
   
@@ -109,27 +111,36 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
     day: "numeric",
   });
   const { openAddAssetModal } = useAddAssetModal();
-  const [isDarkMode, setIsDarkMode] = useState(false);
- 
+  const [isDarkMode, setIsDarkMode] = useState(() =>
+    document.body.classList.contains("theme-dark")
+  );
 
   function toggleTheme() {
     setIsDarkMode((prev) => {
       const next = !prev;
       document.body.classList.toggle("theme-dark", next);
+      localStorage.setItem("theme", next ? "dark" : "light");
       return next;
     });
   }
+
+  const initials = (profile?.full_name ?? "")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("");
 
   return (
     <header className="flex h-20 items-center justify-between gap-4 rounded-2xl border border-border bg-surface px-4 shadow-[var(--shadow-card)] sm:px-6">
       {/* Greeting + date */}
       <div className="min-w-0 shrink-0">
-        <h1 className="truncate text-base font-semibold sm:text-lg">
+        <p className="truncate font-display text-base font-semibold sm:text-lg">
           <span className="text-gray-800">Hello, </span>
           <span className="text-accent-secondary">
             {profileLoading ? "..." : profile?.full_name?.split(" ")[0] ?? "there"}
           </span>
-        </h1>
+        </p>
         <p className="hidden text-xs text-gray-400 sm:block">{today}</p>
       </div>
 
@@ -157,7 +168,7 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
                   {matchingHoldings.map((holding) => (
                     <NavLink
                       key={holding.id}
-                      to={`/assets/${holding.id}`}
+                      to={`/assets/${holding.assets?.id}`}
                       onClick={() => {
   setQuery("");
   setIsDropdownOpen(false);
@@ -244,18 +255,11 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
         <button
           type="button"
           onClick={toggleTheme}
-          aria-label="Toggle theme color"
-          className="relative h-7 w-14 shrink-0 rounded-full transition-colors duration-300"
-            style={{
-            backgroundColor: isDarkMode ? "#17352F" : "#1E3A8A",
-          }}
-          
+          aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+          title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+          className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
         >
-          <span
-            className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
-              isDarkMode ? "translate-x-7" : "translate-x-0"
-            }`}
-          />
+          {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
         <div ref={currencyRef} className="relative">
           <button
@@ -310,15 +314,12 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
           )}
         </div>
 
-        <button
-          type="button"
-          className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
-          aria-label="Notifications"
+        <div
+          title={profile?.full_name}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white"
         >
-          <Bell className="h-5 w-5" />
-        </button>
-
-        <div className="h-9 w-9 shrink-0 rounded-full bg-gray-200" />
+          {initials}
+        </div>
       </div>
     </header>
   );

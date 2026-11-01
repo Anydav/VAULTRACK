@@ -4,6 +4,7 @@ import { getAccounts } from "../../services/account.service";
 import { getUserAssets } from "../../services/userAssets.service";
 import {ErrorState} from  "../../components/ui/errorState"
 import { formatCurrency } from "../../utils";
+import { Card } from "../../components/ui/card";
 
 interface AccountSummaryCardProps {
   accountId: string;
@@ -53,40 +54,40 @@ export default function AccountSummaryCard({
 
   if (accountsLoading || holdingsLoading) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <Card>
         <div className="flex min-h-[100px] flex-col items-center justify-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-text" />
           <p className="text-sm font-medium text-gray-400">
             Loading custodian...
           </p>
         </div>
-      </div>
+      </Card>
     );
   }
   if (accountsError || holdingsError) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <ErrorState
         onRetry={() => {
           refetchAccounts();
           refetchHoldings();
         }}
       />
-    </div>
+    </Card>
   );
 }
   if (!account) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <Card>
         <p className="text-sm text-gray-400">Custodian not found.</p>
-      </div>
+      </Card>
     );
   }
 
   const isProfit = totalProfit >= 0;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div>
           
@@ -117,6 +118,6 @@ export default function AccountSummaryCard({
           </p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

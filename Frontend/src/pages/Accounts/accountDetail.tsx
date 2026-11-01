@@ -9,6 +9,8 @@ import TransactionTable from "../../components/transactions/transactionTable";
 import EditAccountModal from "./editAccountModal";
 import SellModal from "../../components/transactions/sellModal";
 import { ConfirmModal } from "../../components/ui/confirmModal";
+import { PageHeader } from "../../components/ui/pageHeader";
+import { Button } from "../../components/ui/button";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
 import { useToast } from "../../context/toastContext";
 import type { Holding } from "../../types/userAssets";
@@ -52,39 +54,22 @@ if (!accountId) {
   return <p className="text-sm text-gray-400">Invalid custodian.</p>;
 }
 
-  const secondaryButtonClass =
-    "rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:border-accent-secondary hover:text-text disabled:opacity-40";
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-text">{account?.name ?? "Custodian"}</h1>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className={secondaryButtonClass}
-            disabled={!account}
-            onClick={() => setIsEditOpen(true)}
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            className={secondaryButtonClass}
-            disabled={!account}
-            onClick={() => setIsRemoveOpen(true)}
-          >
-            Remove
-          </button>
-          <button
-            type="button"
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f241f]"
-            onClick={() => openAddAssetModal({ accountId })}
-          >
-            + Add Asset
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title={account?.name ?? "Custodian"}
+        actions={
+          <>
+            <Button variant="secondary" disabled={!account} onClick={() => setIsEditOpen(true)}>
+              Edit
+            </Button>
+            <Button variant="secondary" disabled={!account} onClick={() => setIsRemoveOpen(true)}>
+              Remove
+            </Button>
+            <Button onClick={() => openAddAssetModal({ accountId })}>+ Add Asset</Button>
+          </>
+        }
+      />
 
       <AccountSummaryCard accountId={accountId} />
       <AccountAssetsTable accountId={accountId} onSell={setSellHolding} />

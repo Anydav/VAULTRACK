@@ -1,29 +1,21 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, LogOut } from "lucide-react";
+import { ChevronDown, LogOut, LayoutDashboard, PieChart, Landmark, Coins, History, Sparkles } from "lucide-react";
 import { getAccounts } from "../../services/account.service";
 import { getUserAssets } from "../../services/userAssets.service";
 import { logout } from "../../services/auth.service";
 
 import Logo from "../../assets/Vector.png";
-import DashboardIcon from "../../assets/Category.png";
-import PortfolioIcon from "../../assets/chat.png";
-import AccountsIcon from "../../assets/stats.png";
-import AssetsIcon from "../../assets/Search.png";
-import HistoryIcon from "../../assets/Chart.png";
-import SettingsIcon from "../../assets/Setting.png";
-
-
 
 const topNavItems = [
-  { label: "Dashboard", path: "/dashboard", icon: DashboardIcon },
-  { label: "Portfolio", path: "/portfolio", icon: PortfolioIcon },
+  { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { label: "Portfolio", path: "/portfolio", icon: PieChart },
 ];
 
 const bottomNavItems = [
-  { label: "History", path: "/history", icon: HistoryIcon },
-  { label: "Analysis", path: "/Analysis", icon: SettingsIcon },
+  { label: "History", path: "/history", icon: History },
+  { label: "Analysis", path: "/Analysis", icon: Sparkles },
 ];
 
 export function Sidebar() {
@@ -38,9 +30,14 @@ export function Sidebar() {
   const [isAssetsOpen, setIsAssetsOpen] = useState(false);
   const location = useLocation();
   const isOnAssetsRoute = location.pathname.startsWith("/assets");
+  const isOnAssetsList = location.pathname === "/assets";
+  const isOnAccountsRoute = location.pathname.startsWith("/accounts");
  useEffect(() => {
   if (location.pathname.startsWith("/assets")) {
     setIsAssetsOpen(true);
+  }
+  if (location.pathname.startsWith("/accounts")) {
+    setIsAccountsOpen(true);
   }
 }, [location.pathname]);
 
@@ -93,11 +90,7 @@ export function Sidebar() {
                   }`
                 }
               >
-                <img
-                  src={item.icon}
-                  alt=""
-                  className="h-5 w-5 object-contain"
-                />
+                <item.icon className="h-5 w-5" />
                 <span>{item.label}</span>
               </NavLink>
             </li>
@@ -106,10 +99,12 @@ export function Sidebar() {
             <button
               type="button"
               onClick={() => setIsAccountsOpen((prev) => !prev)}
-              className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+              className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10 ${
+                isOnAccountsRoute ? "bg-white/10" : ""
+              }`}
             >
               <span className="flex items-center gap-3">
-                <img src={AccountsIcon} alt="" className="h-5 w-5 object-contain" />
+                <Landmark className="h-5 w-5" />
                <span>Custodians</span>
               </span>
 
@@ -147,7 +142,13 @@ export function Sidebar() {
             )}
           </li>
 <li>
-  <div className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10">
+  <div className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition ${
+    isOnAssetsList
+      ? "bg-accent text-primary"
+      : isOnAssetsRoute
+      ? "bg-white/10 text-white"
+      : "text-white hover:bg-white/10"
+  }`}>
     <button
   type="button"
   onClick={() => {
@@ -158,11 +159,9 @@ export function Sidebar() {
       setIsAssetsOpen(true);
     }
   }}
-  className={`flex flex-1 items-center gap-3 ${
-    location.pathname.startsWith("/assets") ? "text-accent" : "text-white"
-  }`}
+  className="flex flex-1 items-center gap-3"
 >
-  <img src={AssetsIcon} alt="" className="h-5 w-5 object-contain" />
+  <Coins className="h-5 w-5" />
   <span>Assets</span>
 </button>
 
@@ -219,7 +218,7 @@ export function Sidebar() {
         }`
       }
     >
-      <img src={item.icon} alt="" className="h-5 w-5 object-contain" />
+      <item.icon className="h-5 w-5" />
       <span>{item.label}</span>
     </NavLink>
   </li>

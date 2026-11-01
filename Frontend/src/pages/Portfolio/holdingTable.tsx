@@ -6,9 +6,13 @@ import { Table, type TableColumn } from "../../components/tables/table";
 import { AssetLink } from "../../components/ui/assetLink";
 import type { Holding } from "../../types/userAssets";
 import { formatCurrency } from "../../utils";
+import { Card } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { useAddAssetModal } from "../../context/addAssetModelcontext";
 
 export default function HoldingTable() {
   const [query, setQuery] = useState("");
+  const { openAddAssetModal } = useAddAssetModal();
 
   const { data: holdings = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["user-assets"],
@@ -121,7 +125,7 @@ export default function HoldingTable() {
   ];
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold text-text">
           Holding Table
@@ -147,9 +151,10 @@ export default function HoldingTable() {
           isLoading={isLoading}
           isError={isError}
           onRetry={() => refetch()}
-          emptyMessage="No holdings yet"
+          emptyMessage={query ? `No assets match "${query}"` : "No holdings yet"}
+          emptyAction={!query && <Button onClick={() => openAddAssetModal()}>+ Add Asset</Button>}
         />
       </div>
-    </div>
+    </Card>
   );
 }
