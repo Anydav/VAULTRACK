@@ -70,9 +70,9 @@ export default function SummaryCard() {
             Today
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                isProfit
-                  ? "bg-accent text-primary"
-                  : "bg-danger text-primary"
+                isTodayProfit
+                  ? "bg-success-bg text-success"
+                  : "bg-danger-bg text-danger"
               }`}
             >
               {isTodayProfit ? "+" : ""}
@@ -97,8 +97,8 @@ export default function SummaryCard() {
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                   isProfit
-                    ? "bg-accent text-primary"
-                    : "bg-danger text-primary"
+                    ? "bg-success-bg text-success"
+                    : "bg-danger-bg text-danger"
                 }`}
               >
                 {isProfit ? "+" : ""}
