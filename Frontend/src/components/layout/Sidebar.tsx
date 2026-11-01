@@ -49,8 +49,20 @@ export function Sidebar() {
     queryFn: getUserAssets,
   });
 
-  const topAssets = [...holdings]
-    .sort((a, b) => b.valuation.currentValueDisplay - a.valuation.currentValueDisplay)
+  // One entry per asset, adding up the custodians that hold it
+  const topAssets = Object.values(
+    holdings.reduce<Record<string, { id: string; label: string; value: number }>>((byAsset, holding) => {
+      if (!holding.assets) return byAsset;
+      const entry = (byAsset[holding.assets.id] ??= {
+        id: holding.assets.id,
+        label: holding.assets.symbol ?? holding.assets.name,
+        value: 0,
+      });
+      entry.value += holding.valuation.currentValueDisplay;
+      return byAsset;
+    }, {})
+  )
+    .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
   async function handleLogout() {
@@ -175,10 +187,10 @@ export function Sidebar() {
         <p className="text-sm text-white/60">No assets yet</p>
       ) : (
         <>
-          {topAssets.map((holding) => (
+          {topAssets.map((asset) => (
   <NavLink
-    key={holding.id}
-    to={`/assets/${holding.id}`}
+    key={asset.id}
+    to={`/assets/${asset.id}`}
     className={({ isActive }) =>
       `block rounded-lg px-3 py-2 text-sm transition ${
         isActive
@@ -187,7 +199,7 @@ export function Sidebar() {
       }`
     }
   >
-    {holding.assets?.symbol ?? holding.assets?.name}
+    {asset.label}
   </NavLink>
 ))}
         </>
