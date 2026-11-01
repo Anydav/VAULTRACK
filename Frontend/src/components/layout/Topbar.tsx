@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, ChevronDown, Moon, Sun, LogOut } from "lucide-react";
+import { Search, ChevronDown, Moon, Sun, LogOut, Menu, X } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { logout } from "../../services/auth.service";
 import { getMe, updatePreferredCurrency } from "../../services/profile.service";
@@ -9,7 +9,14 @@ import { searchAssets } from "../../services/asset.service";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
 import { SUPPORTED_CURRENCIES, CURRENCY_META, formatCurrency } from "../../utils";
 
-export function Topbar() {
+interface TopbarProps {
+  onOpenNav: () => void;
+}
+
+export function Topbar({ onOpenNav }: TopbarProps) {
+  // Phones: the search box replaces the bar's contents while it's open
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   // See selectAssetStep: "Search all coins" applies only to the text it was clicked for.
@@ -107,6 +114,7 @@ useEffect(() => {
       setIsDropdownOpen(false);
       setIsCurrencyDropdownOpen(false);
       setIsProfileMenuOpen(false);
+      setIsMobileSearchOpen(false);
     }
   }
   document.addEventListener("mousedown", handleClickOutside);
@@ -139,6 +147,11 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
     });
   }
 
+  function closeMobileSearch() {
+    setIsMobileSearchOpen(false);
+    setQuery("");
+  }
+
   const initials = (profile?.full_name ?? "")
     .split(" ")
     .filter(Boolean)
@@ -147,9 +160,25 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
     .join("");
 
   return (
-    <header className="flex h-20 items-center justify-between gap-4 rounded-2xl border border-border bg-surface px-4 shadow-[var(--shadow-card)] sm:px-6">
+    <header className="flex h-16 items-center justify-between gap-2 rounded-2xl border border-border bg-surface px-3 shadow-[var(--shadow-card)] sm:gap-4 sm:px-6 md:h-20">
+      {/* Phones: menu button */}
+      <button
+        type="button"
+        onClick={onOpenNav}
+        aria-label="Open menu"
+        className={`-ml-1 rounded-full p-2 text-gray-600 hover:bg-gray-100 md:hidden ${
+          isMobileSearchOpen ? "hidden" : ""
+        }`}
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
       {/* Greeting + date */}
-      <div className="min-w-0 shrink-0">
+      <div
+        className={`min-w-0 flex-1 md:flex-none md:shrink-0 ${
+          isMobileSearchOpen ? "hidden md:block" : ""
+        }`}
+      >
         <p className="truncate font-display text-base font-semibold sm:text-lg">
           <span className="text-gray-800">Hello, </span>
           <span className="text-accent-secondary">
@@ -160,17 +189,28 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
       </div>
 
       {/* Search bar */}
-      <div className=" hidden flex-1 justify-center md:flex">
+      <div className={`flex-1 justify-center md:flex ${isMobileSearchOpen ? "flex" : "hidden"}`}>
         <div ref={searchRef} className="relative w-full max-w-md">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search assets..."
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-accent-secondary"
-            />
+          <div className="relative flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search assets..."
+                autoFocus={isMobileSearchOpen}
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-accent-secondary"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={closeMobileSearch}
+              aria-label="Close search"
+              className="rounded-full p-2 text-gray-500 hover:bg-gray-100 md:hidden"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
           {showDropdown && (
@@ -187,6 +227,7 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
                       onClick={() => {
   setQuery("");
   setIsDropdownOpen(false);
+  setIsMobileSearchOpen(false);
 }}
                       className="flex items-center justify-between rounded-lg px-2 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
@@ -229,6 +270,7 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
   openAddAssetModal({ asset });
   setQuery("");
   setIsDropdownOpen(false);
+  setIsMobileSearchOpen(false);
 }}
                       className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
@@ -266,13 +308,27 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
       </div>
 
       {/* Notification + profile */}
-      <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+      <div
+        className={`flex shrink-0 items-center gap-1 sm:gap-4 ${
+          isMobileSearchOpen ? "hidden md:flex" : ""
+        }`}
+      >
+        {/* Phones: search button */}
+        <button
+          type="button"
+          onClick={() => setIsMobileSearchOpen(true)}
+          aria-label="Search assets"
+          className="rounded-full p-2 text-gray-500 hover:bg-gray-100 md:hidden"
+        >
+          <Search className="h-5 w-5" />
+        </button>
+
         <button
           type="button"
           onClick={toggleTheme}
           aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
           title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
-          className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+          className="hidden rounded-full p-2 text-gray-500 hover:bg-gray-100 sm:block"
         >
           {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
@@ -280,15 +336,15 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
           <button
             type="button"
             onClick={() => setIsCurrencyDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-2 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:gap-2 sm:px-3"
           >
             <span>{CURRENCY_META[profile?.preferred_currency as keyof typeof CURRENCY_META]?.flag ?? "🇺🇸"}</span>
             <span>{profile?.preferred_currency ?? "USD"}</span>
-            <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+            <ChevronDown className="hidden h-3.5 w-3.5 text-gray-400 sm:block" />
           </button>
 
           {isCurrencyDropdownOpen && (
-            <div className="absolute right-0 top-full z-20 mt-2 w-72 overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
+            <div className="fixed inset-x-3 top-20 z-20 overflow-hidden rounded-xl border border-border bg-surface shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72">
               <p className="border-b border-border px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
                 Display Currency
               </p>
@@ -346,6 +402,14 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
                 <p className="truncate text-sm font-semibold text-text">{profile?.full_name}</p>
                 <p className="truncate text-xs text-gray-400">{profile?.email}</p>
               </div>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:hidden"
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDarkMode ? "Light mode" : "Dark mode"}
+              </button>
               <button
                 type="button"
                 onClick={handleLogout}

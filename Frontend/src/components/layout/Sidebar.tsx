@@ -9,6 +9,7 @@ import {
   Coins,
   History,
   Sparkles,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { getAccounts } from "../../services/account.service";
@@ -83,7 +84,12 @@ function NavGroup({ icon: Icon, label, isOpen, isInside, onToggle, children }: N
   );
 }
 
-export function Sidebar() {
+interface SidebarContentProps {
+  onNavigate?: () => void; // the phone menu closes when a link is tapped
+}
+
+// Logo + navigation, shared by the desktop sidebar and the phone menu
+function SidebarContent({ onNavigate }: SidebarContentProps) {
   const { pathname } = useLocation();
   const isOnAccounts = pathname.startsWith("/accounts");
   const isOnAssets = pathname.startsWith("/assets");
@@ -124,13 +130,18 @@ export function Sidebar() {
     .slice(0, 5);
 
   return (
-    <aside className="hidden h-[calc(100vh-2rem)] w-64 shrink-0 rounded-2xl bg-primary text-white md:flex md:flex-col">
+    <>
       <div className="flex items-center gap-3 px-6 py-8">
         <img src={Logo} alt="VaultTrack Logo" className="h-8 w-8" />
         <p className="text-xl font-bold text-[#efeeea]">VaultTrack</p>
       </div>
 
-      <nav className="thin-scrollbar flex-1 overflow-y-auto px-4 pb-4">
+      <nav
+        className="thin-scrollbar flex-1 overflow-y-auto px-4 pb-4"
+        onClick={(event) => {
+          if ((event.target as HTMLElement).closest("a")) onNavigate?.();
+        }}
+      >
         <ul className="space-y-2">
           {topNavItems.map((item) => (
             <li key={item.path}>
@@ -202,6 +213,69 @@ export function Sidebar() {
           ))}
         </ul>
       </nav>
+    </>
+  );
+}
+
+// Desktop: always visible from tablet width up
+export function Sidebar() {
+  return (
+    <aside className="hidden h-[calc(100vh-2rem)] w-64 shrink-0 rounded-2xl bg-primary text-white md:flex md:flex-col">
+      <SidebarContent />
     </aside>
+  );
+}
+
+interface MobileNavProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+// Phones: the same sidebar, sliding in from the left over a dimmed page
+export function MobileNav({ isOpen, onClose }: MobileNavProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen, onClose]);
+
+  return (
+    <div className={`fixed inset-0 z-40 md:hidden ${isOpen ? "visible" : "invisible delay-200"}`}>
+      <div
+        className={`absolute inset-0 bg-black/40 transition-opacity duration-200 ${
+          isOpen ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={onClose}
+      />
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        className={`absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-primary text-white shadow-xl transition-transform duration-200 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close menu"
+          className="absolute right-3 top-3 rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <SidebarContent onNavigate={onClose} />
+      </aside>
+    </div>
   );
 }
