@@ -105,8 +105,6 @@ export default function AccountAssetsTable({
 
   return (
     <Card>
-      <h2 className="mb-4 text-lg font-semibold text-text">Assets</h2>
-
       <Table
   columns={columns}
   data={accountHoldings}

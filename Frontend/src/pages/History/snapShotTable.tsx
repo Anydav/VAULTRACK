@@ -86,10 +86,6 @@ export default function SnapshotTable() {
 
   return (
     <Card>
-      <h2 className="mb-4 text-lg font-semibold text-text">
-        Snapshot Table
-      </h2>
-
       <Table
         columns={columns}
         data={rows}

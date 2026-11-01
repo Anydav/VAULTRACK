@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, ChevronDown, Moon, Sun } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { Search, ChevronDown, Moon, Sun, LogOut } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { logout } from "../../services/auth.service";
 import { getMe, updatePreferredCurrency } from "../../services/profile.service";
 import { getUserAssets } from "../../services/userAssets.service";
 import { searchAssets } from "../../services/asset.service";
@@ -19,6 +20,16 @@ export function Topbar() {
  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
   const queryClient = useQueryClient();
+  const profileRef = useRef<HTMLDivElement>(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // Moved here from the Sidebar
+  async function handleLogout() {
+    await logout();
+    queryClient.clear();
+    navigate("/auth");
+  }
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -87,11 +98,15 @@ useEffect(() => {
     if (currencyRef.current && !currencyRef.current.contains(event.target as Node)) {
       setIsCurrencyDropdownOpen(false);
     }
+    if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+      setIsProfileMenuOpen(false);
+    }
   }
   function handleEscape(event: KeyboardEvent) {
     if (event.key === "Escape") {
       setIsDropdownOpen(false);
       setIsCurrencyDropdownOpen(false);
+      setIsProfileMenuOpen(false);
     }
   }
   document.addEventListener("mousedown", handleClickOutside);
@@ -314,11 +329,33 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
           )}
         </div>
 
-        <div
-          title={profile?.full_name}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white"
-        >
-          {initials}
+        <div ref={profileRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setIsProfileMenuOpen((open) => !open)}
+            aria-label="Account menu"
+            aria-expanded={isProfileMenuOpen}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white ring-offset-2 ring-offset-surface hover:ring-2 hover:ring-accent-secondary"
+          >
+            {initials}
+          </button>
+
+          {isProfileMenuOpen && (
+            <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
+              <div className="border-b border-border px-4 py-3">
+                <p className="truncate text-sm font-semibold text-text">{profile?.full_name}</p>
+                <p className="truncate text-xs text-gray-400">{profile?.email}</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-danger hover:bg-gray-50"
+              >
+                <LogOut className="h-4 w-4" />
+                Log out
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

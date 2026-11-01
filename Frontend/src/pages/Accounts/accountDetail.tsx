@@ -10,11 +10,19 @@ import EditAccountModal from "./editAccountModal";
 import SellModal from "../../components/transactions/sellModal";
 import { ConfirmModal } from "../../components/ui/confirmModal";
 import { PageHeader } from "../../components/ui/pageHeader";
+import { Tabs } from "../../components/ui/tabs";
 import { Button } from "../../components/ui/button";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
 import { useToast } from "../../context/toastContext";
 import type { Holding } from "../../types/userAssets";
 import { getErrorMessage, refreshPortfolio } from "../../utils/apiError";
+
+const tabs = [
+  { key: "assets", label: "Assets" },
+  { key: "transactions", label: "Transactions" },
+] as const;
+
+type CustodianTab = (typeof tabs)[number]["key"];
 
 export default function AccountDetail() {
   const { accountId } = useParams<{ accountId: string }>();
@@ -25,6 +33,7 @@ export default function AccountDetail() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isRemoveOpen, setIsRemoveOpen] = useState(false);
   const [sellHolding, setSellHolding] = useState<Holding | null>(null);
+  const [tab, setTab] = useState<CustodianTab>("assets");
 
   const { data: accounts = [] } = useQuery({
     queryKey: ["accounts"],
@@ -72,12 +81,18 @@ if (!accountId) {
       />
 
       <AccountSummaryCard accountId={accountId} />
-      <AccountAssetsTable accountId={accountId} onSell={setSellHolding} />
-      <TransactionTable
-        accountId={accountId}
-        onSell={setSellHolding}
-        emptyMessage="No transactions in this custodian yet"
-      />
+      <Tabs tabs={tabs} active={tab} onChange={setTab} />
+
+      {tab === "assets" ? (
+        <AccountAssetsTable accountId={accountId} onSell={setSellHolding} />
+      ) : (
+        <TransactionTable
+          accountId={accountId}
+          onSell={setSellHolding}
+          hideTitle
+          emptyMessage="No transactions in this custodian yet"
+        />
+      )}
 
       {isEditOpen && account && (
         <EditAccountModal account={account} onClose={() => setIsEditOpen(false)} />

@@ -18,6 +18,8 @@ interface TransactionTableProps {
   onSell?: (holding: Holding) => void;
   emptyMessage?: string;
   emptyAction?: ReactNode;
+  // Under a tab that already says "Transactions"
+  hideTitle?: boolean;
 }
 
 // Transactions, newest first, including removed ones. Filtered by custodian
@@ -28,6 +30,7 @@ export default function TransactionTable({
   onSell,
   emptyMessage = "No transactions yet",
   emptyAction,
+  hideTitle = false,
 }: TransactionTableProps) {
   const [toRemove, setToRemove] = useState<Transaction | null>(null);
 
@@ -76,7 +79,7 @@ export default function TransactionTable({
 
   return (
     <Card>
-      <h2 className="mb-4 text-lg font-semibold text-text">Transactions</h2>
+      {!hideTitle && <h2 className="mb-4 text-lg font-semibold text-text">Transactions</h2>}
 
       <Table
         columns={columns}
