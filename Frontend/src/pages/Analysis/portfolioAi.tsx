@@ -117,14 +117,14 @@ export default function PortfolioAI() {
         }
       `}</style>
 
-      <div className="border-b border-border px-6 py-4">
+      <div className="border-b border-border px-4 py-4 sm:px-6">
         <h1 className="text-lg font-semibold text-text">Ask about your portfolio</h1>
         <p className="text-xs text-text-muted">
           Each question is independent — I won't remember earlier ones in this session yet.
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
         {isEmpty ? (
           <EmptyState onPick={(q) => setInput(q)} />
         ) : (
@@ -137,7 +137,7 @@ export default function PortfolioAI() {
         )}
       </div>
 
-      <div className="border-t border-border px-6 py-4">
+      <div className="sticky bottom-0 border-t border-border bg-background px-4 py-4 sm:px-6">
         <div className="mx-auto flex max-w-2xl items-end gap-2 rounded-2xl border border-border bg-surface px-3 py-2 shadow-sm focus-within:border-accent-secondary">
           <textarea
             ref={textareaRef}

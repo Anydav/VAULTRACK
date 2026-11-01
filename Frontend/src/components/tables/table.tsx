@@ -113,11 +113,11 @@ export function Table<T>({
               </div>
 
               {detailColumns.length > 0 && (
-                <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm tabular-nums">
+                <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-3 text-sm tabular-nums">
                   {detailColumns.map((column) => (
-                    <div key={column.key} className="flex min-w-0 items-baseline justify-between gap-2">
-                      <dt className="shrink-0 text-xs text-gray-400">{column.header}</dt>
-                      <dd className="min-w-0 truncate text-right text-text">{column.render(row)}</dd>
+                    <div key={column.key} className="min-w-0">
+                      <dt className="text-xs text-gray-400">{column.header}</dt>
+                      <dd className="break-words text-text">{column.render(row)}</dd>
                     </div>
                   ))}
                 </dl>

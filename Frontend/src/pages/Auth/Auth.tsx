@@ -96,7 +96,7 @@ export default function Auth() {
 
 
   return (
-  <div className="flex bg-white  h-screen">
+  <div className="flex min-h-screen bg-white">
     <LeftPanel mode={mode} />
 
     <AuthForm

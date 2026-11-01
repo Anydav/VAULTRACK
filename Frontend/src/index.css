@@ -132,3 +132,13 @@ h1, h2, h3 {
 .thin-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-accent-secondary);
 }
+
+/* iPhones zoom into any text box with text under 16px when it's tapped,
+   so on phones every text box gets 16px. !important beats the text-sm on each input. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

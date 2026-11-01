@@ -23,7 +23,7 @@ export function MainLayout() {
           <Topbar onOpenNav={() => setIsNavOpen(true)} />
         </div>
 
-        <main className="flex-1 rounded-2xl px-1 py-3 md:p-6">
+        <main className="flex-1 rounded-2xl py-3 md:p-6">
           <Outlet />
         </main>
       </div>
