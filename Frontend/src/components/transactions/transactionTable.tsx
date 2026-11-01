@@ -7,6 +7,7 @@ import { transactionColumns, RemovedLabel } from "./transactionColumns";
 import RemoveTransactionModal from "./removeTransactionModal";
 import type { Transaction } from "../../types/transaction";
 import type { Holding } from "../../types/userAssets";
+import { Card } from "../ui/card";
 
 interface TransactionTableProps {
   accountId?: string;
@@ -72,7 +73,7 @@ export default function TransactionTable({
       : undefined;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <h2 className="mb-4 text-lg font-semibold text-text">Transactions</h2>
 
       <Table
@@ -99,6 +100,6 @@ export default function TransactionTable({
           }
         />
       )}
-    </div>
+    </Card>
   );
 }

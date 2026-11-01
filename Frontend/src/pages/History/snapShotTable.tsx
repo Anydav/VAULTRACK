@@ -4,6 +4,7 @@ import { getPortfolioSnapshots } from "../../services/snapShot.service";
 import { Table, type TableColumn } from "../../components/tables/table";
 import type { PortfolioSnapshot } from "../../types/snapShot";
 import { formatCurrency } from "../../utils";
+import { Card } from "../../components/ui/card";
 
 interface SnapshotRow extends PortfolioSnapshot {
   dailyChangeDisplay: number;
@@ -83,7 +84,7 @@ export default function SnapshotTable() {
   ];
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <h2 className="mb-4 text-lg font-semibold text-text">
         Snapshot Table
       </h2>
@@ -95,6 +96,6 @@ export default function SnapshotTable() {
         isLoading={isLoading}
         emptyMessage="No snapshots recorded yet"
       />
-    </div>
+    </Card>
   );
 }

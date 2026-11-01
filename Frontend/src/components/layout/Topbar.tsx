@@ -135,12 +135,12 @@ const showDropdown = isDropdownOpen && debouncedQuery.length > 0;
     <header className="flex h-20 items-center justify-between gap-4 rounded-2xl border border-border bg-surface px-4 shadow-[var(--shadow-card)] sm:px-6">
       {/* Greeting + date */}
       <div className="min-w-0 shrink-0">
-        <h1 className="truncate text-base font-semibold sm:text-lg">
+        <p className="truncate font-display text-base font-semibold sm:text-lg">
           <span className="text-gray-800">Hello, </span>
           <span className="text-accent-secondary">
             {profileLoading ? "..." : profile?.full_name?.split(" ")[0] ?? "there"}
           </span>
-        </h1>
+        </p>
         <p className="hidden text-xs text-gray-400 sm:block">{today}</p>
       </div>
 

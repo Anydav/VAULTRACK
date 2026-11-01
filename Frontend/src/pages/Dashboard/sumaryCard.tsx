@@ -6,6 +6,7 @@ import { LoadingSpinner } from "../../components/ui/loadingSpinner";
 import { EmptyState } from "../../components/ui/emptyState";
 import {ErrorState} from "../../components/ui/errorState";
 import { formatCurrency } from "../../utils";
+import { Card } from "../../components/ui/card";
 
 export default function SummaryCard() {
   const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = useQuery({
@@ -25,14 +26,14 @@ export default function SummaryCard() {
 
   if (summaryLoading || accountsLoading || performanceLoading) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <Card>
         <LoadingSpinner message="Loading summary..." />
-      </div>
+      </Card>
     );
   }
   if (summaryError || accountsError || performanceError) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <ErrorState
         onRetry={() => {
           refetchSummary();
@@ -40,18 +41,18 @@ export default function SummaryCard() {
           refetchPerformance();
         }}
       />
-    </div>
+    </Card>
   );
 }
 
   if (!summary) {
     return (
-       <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+       <Card>
         <EmptyState
           title="No data available"
           description="Check back once your portfolio data is ready."
         />
-      </div>
+      </Card>
     );
   }
   const isProfit = summary.totalProfitLossDisplay >= 0;
@@ -59,7 +60,7 @@ export default function SummaryCard() {
   const isTodayProfit = todayChangePercentage >= 0;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
         <div className="space-y-5">
           <h3 className="text-sm text-gray-400">Total Portfolio Value</h3>
@@ -123,6 +124,6 @@ export default function SummaryCard() {
           </p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

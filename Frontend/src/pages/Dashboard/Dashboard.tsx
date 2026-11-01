@@ -3,6 +3,8 @@ import AssetHoldingCard from "./AssetHoldingCard";
 import AnalyisChart from "./AnalysisChart";
 import CurrencyOnboardingModal from "./CurrencyOnboardingModal";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
+import { PageHeader } from "../../components/ui/pageHeader";
+import { Button } from "../../components/ui/button";
 
 export default function Dashboard() {
   const { openAddAssetModal } = useAddAssetModal();
@@ -10,16 +12,10 @@ export default function Dashboard() {
   return  (
     <div className="space-y-6">
       <CurrencyOnboardingModal />
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-text">Dashboard</h1>
-        <button
-          type="button"
-          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-[#0f241f]"
-          onClick={() => openAddAssetModal()}
-        >
-          + Add Asset
-        </button>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        actions={<Button onClick={() => openAddAssetModal()}>+ Add Asset</Button>}
+      />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
           <div className="lg:col-span-3">
             <SummaryCard />

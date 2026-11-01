@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserAssets } from "../../services/userAssets.service";
 import { ErrorState } from "../../components/ui/errorState";
 import { formatCurrency } from "../../utils";
+import { Card } from "../../components/ui/card";
 
 export default function AssetHoldingCard() {
   const { data: holdings = [], isLoading, isError, refetch } = useQuery({
@@ -10,7 +11,7 @@ export default function AssetHoldingCard() {
   });
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <h2 className="mb-4 text-lg font-semibold text-text">
         Asset Holding
       </h2>
@@ -62,6 +63,6 @@ export default function AssetHoldingCard() {
         </table>
       </div>
       )}
-    </div>
+    </Card>
   );
 }

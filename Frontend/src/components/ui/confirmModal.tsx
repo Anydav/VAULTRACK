@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Modal } from "./model";
+import { Button } from "./button";
 
 interface ConfirmModalProps {
   title: string;
@@ -31,21 +32,12 @@ export function ConfirmModal({
       {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
 
       <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <button
-          type="button"
-          onClick={secondaryAction?.onClick ?? onClose}
-          className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:border-accent-secondary hover:text-text"
-        >
+        <Button variant="secondary" onClick={secondaryAction?.onClick ?? onClose}>
           {secondaryAction?.label ?? "Cancel"}
-        </button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          disabled={isPending}
-          className="rounded-xl bg-danger px-4 py-2 text-sm font-semibold text-white hover:bg-danger/90 disabled:opacity-60"
-        >
+        </Button>
+        <Button variant="danger" onClick={onConfirm} disabled={isPending}>
           {isPending ? "Removing..." : confirmLabel}
-        </button>
+        </Button>
       </div>
     </Modal>
   );

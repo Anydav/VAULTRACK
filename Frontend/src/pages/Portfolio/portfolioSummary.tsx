@@ -5,6 +5,7 @@ import { LoadingSpinner } from "../../components/ui/loadingSpinner";
 import { EmptyState } from "../../components/ui/emptyState";
 import { ErrorState } from "../../components/ui/errorState";
 import { formatCurrency } from "../../utils";
+import { Card } from "../../components/ui/card";
 
 export default function PortfolioSummary() {
   const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = useQuery({
@@ -19,32 +20,32 @@ export default function PortfolioSummary() {
 
   if (summaryLoading || accountsLoading) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <Card>
         <LoadingSpinner message="Loading summary..." />
-      </div>
+      </Card>
     );
   }
   if (summaryError || accountsError) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <ErrorState
         onRetry={() => {
           refetchSummary();
           refetchAccounts();
         }}
       />
-    </div>
+    </Card>
   );
 }
 
   if (!summary) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <Card>
         <EmptyState
           title="No data available"
           description="Check back once your portfolio data is ready."
         />
-      </div>
+      </Card>
     );
   }
 
@@ -71,7 +72,7 @@ export default function PortfolioSummary() {
   ];
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <h2 className="mb-4 text-lg font-semibold text-text">
         Portfolio  Summary
       </h2>
@@ -96,6 +97,6 @@ export default function PortfolioSummary() {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

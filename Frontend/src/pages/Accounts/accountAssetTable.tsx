@@ -5,6 +5,7 @@ import { Table, type TableColumn } from "../../components/tables/table";
 import { AssetLink } from "../../components/ui/assetLink";
 import type { Holding } from "../../types/userAssets";
 import { formatCurrency } from "../../utils";
+import { Card } from "../../components/ui/card";
 
 interface AccountAssetsTableProps {
   accountId: string;
@@ -100,7 +101,7 @@ export default function AccountAssetsTable({
   ];
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <Card>
       <h2 className="mb-4 text-lg font-semibold text-text">Assets</h2>
 
       <Table
@@ -112,6 +113,6 @@ export default function AccountAssetsTable({
   onRetry={() => refetch()}
   emptyMessage="No assets in this custodian yet"
 />
-    </div>
+    </Card>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createHolding } from "../../services/userAssets.service";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
+import { Button } from "../ui/button";
 
 export default function AssetDetailsStep() {
   const [quantity, setQuantity] = useState("");
@@ -131,13 +132,9 @@ export default function AssetDetailsStep() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={mutation.isPending}
-        className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
-      >
+      <Button type="submit" fullWidth disabled={mutation.isPending}>
         {mutation.isPending ? "Adding..." : "Add Asset"}
-      </button>
+      </Button>
     </form>
   );
 }

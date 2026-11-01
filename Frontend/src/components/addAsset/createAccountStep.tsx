@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { createAccount } from "../../services/account.service";
 import { useAddAssetModal } from "../../context/addAssetModelcontext";
+import { Button } from "../ui/button";
 
 export default function CreateAccountStep() {
   const [name, setName] = useState("");
@@ -85,13 +86,9 @@ export default function CreateAccountStep() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={mutation.isPending}
-        className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
-      >
+      <Button type="submit" fullWidth disabled={mutation.isPending}>
         {mutation.isPending ? "Adding..." : "Add Custodian"}
-      </button>
+      </Button>
     </form>
   );
 }

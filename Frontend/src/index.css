@@ -9,6 +9,7 @@
      or text-primary on a bg-accent/bg-danger chip) stays correct in both
      modes without extra tokens. */
   --color-primary: #04005A;
+  --color-primary-hover: #020038;
   --color-accent: #E2A63B;
   --color-accent-secondary: #2563EB;
 

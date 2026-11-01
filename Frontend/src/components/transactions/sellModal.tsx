@@ -6,6 +6,7 @@ import { useToast } from "../../context/toastContext";
 import type { Holding } from "../../types/userAssets";
 import { SUPPORTED_CURRENCIES } from "../../utils";
 import { getErrorMessage, refreshPortfolio, todayLocal } from "../../utils/apiError";
+import { Button } from "../ui/button";
 
 interface SellModalProps {
   // One holding, or the same asset in several custodians (asset page): then
@@ -181,13 +182,9 @@ export default function SellModal({ holdings, onClose }: SellModalProps) {
           <p className="text-sm text-red-500">{getErrorMessage(mutation.error)}</p>
         )}
 
-        <button
-          type="submit"
-          disabled={mutation.isPending || tooMuch}
-          className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
-        >
+        <Button type="submit" fullWidth disabled={mutation.isPending || tooMuch}>
           {mutation.isPending ? "Recording..." : "Record sale"}
-        </button>
+        </Button>
       </form>
     </Modal>
   );

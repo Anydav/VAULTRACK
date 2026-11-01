@@ -6,6 +6,8 @@ import { Table, type TableColumn } from "../../components/tables/table";
 import { AssetLink } from "../../components/ui/assetLink";
 import type { Holding } from "../../types/userAssets";
 import { formatCurrency } from "../../utils";
+import { Card } from "../../components/ui/card";
+import { PageHeader } from "../../components/ui/pageHeader";
 
 export default function AssetsList() {
   const [query, setQuery] = useState("");
@@ -122,22 +124,23 @@ export default function AssetsList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-text">Assets</h1>
+      <PageHeader
+        title="Assets"
+        actions={
+          <div className="relative w-full sm:w-64">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search asset..."
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-accent-secondary"
+            />
+          </div>
+        }
+      />
 
-        <div className="relative w-full sm:w-64">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search asset..."
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-accent-secondary"
-          />
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <Card>
         <Table
           columns={columns}
           data={filteredHoldings}
@@ -147,7 +150,7 @@ export default function AssetsList() {
           onRetry={() => refetch()}
           emptyMessage="No assets yet"
         />
-      </div>
+      </Card>
     </div>
   );
 }

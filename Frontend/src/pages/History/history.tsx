@@ -1,6 +1,7 @@
 import { useState } from "react";
 import SnapshotTable from "./snapShotTable";
 import TransactionTable from "../../components/transactions/transactionTable";
+import { PageHeader } from "../../components/ui/pageHeader";
 
 const tabs = [
   { key: "transactions", label: "Transactions" },
@@ -14,6 +15,8 @@ export default function History() {
 
   return (
     <div className="space-y-6">
+      <PageHeader title="History" />
+
       <div role="tablist" className="flex gap-6 border-b border-border">
         {tabs.map((t) => (
           <button

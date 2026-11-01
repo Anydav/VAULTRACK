@@ -5,6 +5,7 @@ import { updateAccount } from "../../services/account.service";
 import { useToast } from "../../context/toastContext";
 import type { Account } from "../../types/account";
 import { getErrorMessage } from "../../utils/apiError";
+import { Button } from "../../components/ui/button";
 
 interface EditAccountModalProps {
   account: Account;
@@ -86,13 +87,9 @@ export default function EditAccountModal({ account, onClose }: EditAccountModalP
           <p className="text-sm text-red-500">{getErrorMessage(mutation.error)}</p>
         )}
 
-        <button
-          type="submit"
-          disabled={mutation.isPending}
-          className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
-        >
+        <Button type="submit" fullWidth disabled={mutation.isPending}>
           {mutation.isPending ? "Saving..." : "Save"}
-        </button>
+        </Button>
       </form>
     </Modal>
   );
