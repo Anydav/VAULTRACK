@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createAccount, getUserAccounts, updateAccount, deleteAccount } from "../services/account.service.js";
+import { createAccount, getUserAccounts, updateAccount, removeAccount } from "../services/account.service.js";
 
 export async function createAccountController(req: Request, res: Response) {
   try {
@@ -116,7 +116,7 @@ export async function updateAccountController(req: Request, res: Response) {
   }
 }
 
-export async function deleteAccountController(req: Request, res: Response) {
+export async function removeAccountController(req: Request, res: Response) {
   try {
     if (!req.user) {
       return res.status(401).json({
@@ -125,11 +125,11 @@ export async function deleteAccountController(req: Request, res: Response) {
       });
     }
 
-    await deleteAccount(req.user.userId, String(req.params.id));
+    await removeAccount(req.user.userId, String(req.params.id));
 
     return res.status(200).json({
       success: true,
-      message: "Account deleted successfully",
+      message: "Account removed successfully",
     });
   } catch (error) {
     const message =

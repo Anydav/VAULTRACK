@@ -50,10 +50,11 @@ All foreign keys and unique constraints below are real database constraints.
 | `currency` | Optional at creation; nullable (type is `string \| null` in `types/account.ts`, and the field is optional in `CreateAccountInput`). |
 | `created_at` | Used for `order("created_at", { ascending: false })` when listing. |
 | `updated_at` | Kept current by the `trg_accounts_updated_at` trigger. |
+| `removed_at` | Nullable. Empty = active; a date = removed by the user. Removed accounts are hidden from the app except History. |
 
 **Relationships**: `accounts.id` ← `user_assets.account_id` (on delete cascade) and ← `transactions.account_id` (no cascade). `user_assets` selects embed `accounts (id, name, account_type, currency)`.
 
-**Deleting**: through the `delete_account(p_account_id, p_user_id)` function (`20261030120000_delete_account.sql`), callable by the service role only. It returns `false` if the account doesn't exist or isn't that user's; otherwise it deletes the account's transactions in one statement, then the account, and returns `true`. One statement matters: the holdings trigger then runs once all the transactions are gone, instead of rejecting a buy deleted before the sell that needs it. The trigger removes the account's holdings.
+**Removing**: accounts are never deleted. The `remove_account(p_account_id, p_user_id)` function (`20261101000000_remove_instead_of_delete.sql`, service role only) sets `removed_at` and deletes the account's `user_assets` rows; its transactions are kept unchanged for History. It returns `false` if the account doesn't exist, isn't that user's, or is already removed. It replaced `delete_account` (`20261030120000_delete_account.sql`), which deleted the account and its transactions.
 
 ---
 
@@ -100,7 +101,7 @@ All foreign keys and unique constraints below are real database constraints.
 
 **Purpose**: A user's holding of a specific asset inside a specific account. Referred to as "holdings" in application code/comments.
 
-Since v2 this is a **cache rebuilt from `transactions`**: the `recalculate_holding` database function rewrites the row whenever one of that account + asset's transactions is added, edited or deleted. Application code never writes it directly. There is at most one row per account + asset (`user_assets_account_asset_unique`), and a fully sold holding has no row.
+Since v2 this is a **cache rebuilt from `transactions`**: the `recalculate_holding` database function rewrites the row whenever one of that account + asset's transactions is added or removed. Application code never writes it directly. There is at most one row per account + asset (`user_assets_account_asset_unique`), and a fully sold holding has no row.
 
 | Column | Notes |
 |---|---|
@@ -202,8 +203,9 @@ Since v2 this is a **cache rebuilt from `transactions`**: the `recalculate_holdi
 | `transfer_id` | Nullable. Links the two halves of a transfer. Unused today. |
 | `notes` | Free text. Holdings migrated from v1 say `Migrated from v1 holding <id>`. |
 | `created_at`, `updated_at` | `updated_at` is kept current by `trg_transactions_updated_at`. |
+| `removed_at` | Nullable. Empty = active; a date = removed by the user (entered by mistake). Removed rows are kept for History but don't count toward holdings or net invested. The app never deletes or edits transactions; it only adds them and sets `removed_at`. |
 
-**Trigger**: `trg_transactions_recalculate_holding` calls `recalculate_holding(account_id, asset_id)` after every insert, update or delete, for both the old and new pair if an edit moves a transaction. If the rebuild finds a sell bigger than what was held at that date, it raises "Cannot sell …" and the change is rejected.
+**Trigger**: `trg_transactions_recalculate_holding` calls `recalculate_holding(account_id, asset_id)` after every insert, update or delete, for both the old and new pair if an update moves a transaction. The rebuild only counts transactions with no `removed_at` on an account with no `removed_at`. If it finds a sell bigger than what was held at that date, it raises "Cannot sell …" and the change is rejected.
 
 **No fees**: the app doesn't record trading fees.
 

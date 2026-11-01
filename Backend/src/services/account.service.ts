@@ -27,6 +27,7 @@ export async function getUserAccounts(userId: string) {
     .from("accounts")
     .select("id, name, account_type, currency, created_at")
     .eq("user_id", userId)
+    .is("removed_at", null)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -48,6 +49,7 @@ export async function updateAccount(userId: string, accountId: string, changes: 
     .update(update)
     .eq("id", accountId)
     .eq("user_id", userId)
+    .is("removed_at", null)
     .select("id, name, account_type, currency, created_at")
     .maybeSingle();
 
@@ -62,10 +64,10 @@ export async function updateAccount(userId: string, accountId: string, changes: 
   return data;
 }
 
-// Deletes the account with all its transactions and holdings (delete_account
-// database function, all-or-nothing).
-export async function deleteAccount(userId: string, accountId: string) {
-  const { data: deleted, error } = await supabase.rpc("delete_account", {
+// Marks the account removed and takes its holdings out of the portfolio. Its
+// transactions are kept for History (remove_account database function).
+export async function removeAccount(userId: string, accountId: string) {
+  const { data: removed, error } = await supabase.rpc("remove_account", {
     p_account_id: accountId,
     p_user_id: userId,
   });
@@ -74,7 +76,7 @@ export async function deleteAccount(userId: string, accountId: string) {
     throw new Error(error.message);
   }
 
-  if (!deleted) {
+  if (!removed) {
     throw new Error("Account not found");
   }
 }
