@@ -43,6 +43,7 @@ export default function AccountAssetsTable({
     {
       key: "value",
       header: "Value",
+      mobile: "value",
       align: "right",
       render: (holding) =>
         formatCurrency(

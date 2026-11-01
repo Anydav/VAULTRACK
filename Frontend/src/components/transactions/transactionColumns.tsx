@@ -26,6 +26,7 @@ export const transactionColumns: TableColumn<Transaction>[] = [
   {
     key: "type",
     header: "Type",
+    mobile: "value",
     render: (tx) => (
       <span
         className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
@@ -39,6 +40,7 @@ export const transactionColumns: TableColumn<Transaction>[] = [
   {
     key: "asset",
     header: "Asset",
+    mobile: "title",
     render: (tx) => (
       <span className="font-medium text-text">{tx.assets?.symbol ?? "-"}</span>
     ),
